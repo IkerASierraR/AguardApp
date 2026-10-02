@@ -12,159 +12,125 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bolt
-import androidx.compose.material.icons.filled.TouchApp
-import androidx.compose.material.icons.filled.WaterDrop
-import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.aguardapp.R
-import androidx.compose.ui.res.painterResource
-import com.example.aguardapp.core.ui.theme.Agua
 import com.example.aguardapp.core.ui.theme.AguaMedia
 import com.example.aguardapp.core.ui.theme.AguaProfunda
 import com.example.aguardapp.core.ui.theme.Blanco
 import com.example.aguardapp.core.ui.theme.FuenteTexto
 import com.example.aguardapp.core.ui.theme.IconosClarosEnBarraDeEstado
+import com.example.aguardapp.core.ui.theme.TintaTenue
 
-private val RADIO = RoundedCornerShape(16.dp)
-private val SOMBRA_DEL_BOTON = Color(0x38001A1F)
+private val FORMA = RoundedCornerShape(16.dp)
 
-/** Pantalla 01 del Figma: presenta la app y pide aceptar que los datos se guarden en el teléfono. */
+/** Pantalla de bienvenida: presenta la app; al tocar "Empezar" llama a [onListo] para navegar. */
 @Composable
 fun BienvenidaScreen(
-    uiState: BienvenidaUiState,
-    onAlternarConsentimiento: () -> Unit,
-    onEmpezar: () -> Unit
+    onListo: () -> Unit,
+    viewModel: BienvenidaViewModel = viewModel { BienvenidaViewModel.desdeInyeccion() }
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(uiState.listo) { if (uiState.listo) onListo() }
     IconosClarosEnBarraDeEstado(claros = true)
-    Box(Modifier.fillMaxSize().background(Brush.linearGradient(listOf(AguaProfunda, AguaMedia, Agua)))) {
-        Circulo(420, Modifier.offset(x = 120.dp, y = (-170).dp))
-        Circulo(380, Modifier.offset(x = (-150).dp, y = 520.dp))
-        Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
-            Presentacion(Modifier.weight(1f))
-            Acciones(uiState, onAlternarConsentimiento, onEmpezar)
+    Column(Modifier.fillMaxSize().background(AguaMedia).statusBarsPadding().navigationBarsPadding()) {
+        Presentacion(Modifier.weight(1f))
+        Column(Modifier.padding(start = 24.dp, end = 24.dp, bottom = 12.dp)) {
+            Consentimiento(uiState.consentimiento, viewModel::onAlternarConsentimiento)
+            Spacer(Modifier.height(20.dp))
+            Box(
+                Modifier.fillMaxWidth().height(54.dp).clip(FORMA)
+                    .background(if (uiState.consentimiento) Blanco else TintaTenue)
+                    .clickable(enabled = uiState.consentimiento, role = Role.Button, onClick = viewModel::onEmpezar),
+                contentAlignment = Alignment.Center
+            ) { Text("Empezar", fontFamily = FuenteTexto, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = AguaMedia) }
         }
     }
 }
 
+/** El logo, el título y lo que hace la app. */
 @Composable
 private fun Presentacion(modifier: Modifier) {
     Column(modifier.verticalScroll(rememberScrollState()).padding(horizontal = 24.dp)) {
         Spacer(Modifier.height(40.dp))
-        Logo()
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(44.dp).clip(RoundedCornerShape(14.dp)).background(AguaProfunda), contentAlignment = Alignment.Center) {
+                Icon(painterResource(R.drawable.ic_gota), contentDescription = null, modifier = Modifier.size(24.dp), tint = Blanco)
+            }
+            Text("AguardApp", fontFamily = FuenteTexto, fontSize = 21.sp, fontWeight = FontWeight.ExtraBold, color = Blanco)
+        }
         Spacer(Modifier.height(30.dp))
         Text(
             "Sabe cuánta agua te queda y hasta cuándo te alcanza.",
-            fontFamily = FuenteTexto, fontSize = 33.sp, lineHeight = 39.sp, letterSpacing = (-0.8).sp,
-            fontWeight = FontWeight.ExtraBold, color = Blanco
+            fontFamily = FuenteTexto, fontSize = 33.sp, lineHeight = 39.sp, fontWeight = FontWeight.ExtraBold, color = Blanco
         )
         Spacer(Modifier.height(20.dp))
         Text(
             "Aunque el servicio venga por horas. Sin leer el medidor.",
-            Modifier.fillMaxWidth(0.9f), fontFamily = FuenteTexto, fontSize = 14.5.sp, lineHeight = 22.sp,
-            fontWeight = FontWeight.Medium, color = Blanco.copy(alpha = 0.78f)
+            fontFamily = FuenteTexto, fontSize = 14.5.sp, lineHeight = 22.sp, fontWeight = FontWeight.Medium, color = Blanco
         )
         Spacer(Modifier.height(30.dp))
         Column(verticalArrangement = Arrangement.spacedBy(11.dp)) {
-            Beneficio(Icons.Filled.TouchApp, "Marcas el llenado", "Un toque cuando llega el agua")
-            Beneficio(Icons.Filled.Bolt, "Calcula la proyección", "Sabe a qué hora se te acaba")
-            Beneficio(Icons.Filled.Wifi, "Funciona sin internet", "Todo se guarda en tu teléfono")
+            Beneficio("Marcas el llenado", "Un toque cuando llega el agua")
+            Beneficio("Calcula la proyección", "Sabe a qué hora se te acaba")
+            Beneficio("Funciona sin internet", "Todo se guarda en tu teléfono")
         }
         Spacer(Modifier.height(20.dp))
     }
 }
 
 @Composable
-private fun Circulo(tamano: Int, modifier: Modifier) {
-    Box(modifier.size(tamano.dp).clip(CircleShape).background(Blanco.copy(alpha = 0.06f)))
-}
-
-@Composable
-private fun Logo() {
-    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(
-            Modifier.size(44.dp).clip(RoundedCornerShape(14.dp)).background(Blanco.copy(alpha = 0.18f)),
-            contentAlignment = Alignment.Center
-        ) { Icon(Icons.Filled.WaterDrop, contentDescription = null, modifier = Modifier.size(24.dp), tint = Blanco) }
-        Text("AguardApp", fontFamily = FuenteTexto, fontSize = 21.sp, letterSpacing = (-0.4).sp, fontWeight = FontWeight.ExtraBold, color = Blanco)
-    }
-}
-
-@Composable
-private fun Beneficio(icono: ImageVector, titulo: String, detalle: String) {
+private fun Beneficio(titulo: String, detalle: String) {
     Row(
-        Modifier.fillMaxWidth().clip(RADIO).background(Blanco.copy(alpha = 0.13f)).padding(horizontal = 14.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(13.dp), verticalAlignment = Alignment.CenterVertically
+        Modifier.fillMaxWidth().clip(FORMA).background(AguaProfunda).padding(horizontal = 14.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(13.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            Modifier.size(38.dp).clip(RoundedCornerShape(12.dp)).background(Blanco.copy(alpha = 0.18f)),
-            contentAlignment = Alignment.Center
-        ) { Icon(icono, contentDescription = null, modifier = Modifier.size(20.dp), tint = Blanco) }
+        Icon(painterResource(R.drawable.ic_check), contentDescription = null, modifier = Modifier.size(20.dp), tint = Blanco)
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(titulo, fontFamily = FuenteTexto, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Blanco)
-            Text(detalle, fontFamily = FuenteTexto, fontSize = 11.5.sp, fontWeight = FontWeight.Medium, color = Blanco.copy(alpha = 0.72f))
+            Text(detalle, fontFamily = FuenteTexto, fontSize = 11.5.sp, fontWeight = FontWeight.Medium, color = Blanco)
         }
     }
 }
 
-@Composable
-private fun Acciones(uiState: BienvenidaUiState, onAlternarConsentimiento: () -> Unit, onEmpezar: () -> Unit) {
-    Column(Modifier.padding(start = 24.dp, end = 24.dp, bottom = 12.dp)) {
-        Consentimiento(uiState.consentimiento, onAlternarConsentimiento)
-        Spacer(Modifier.height(20.dp))
-        Box(
-            Modifier.fillMaxWidth().height(54.dp).alpha(if (uiState.consentimiento) 1f else 0.5f)
-                .shadow(8.dp, RADIO, ambientColor = SOMBRA_DEL_BOTON, spotColor = SOMBRA_DEL_BOTON)
-                .clip(RADIO).background(Blanco)
-                .clickable(enabled = uiState.consentimiento, role = Role.Button, onClick = onEmpezar),
-            contentAlignment = Alignment.Center
-        ) { Text("Empezar", fontFamily = FuenteTexto, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = AguaMedia) }
-    }
-}
-
+/** La casilla para aceptar que los datos se guarden en el teléfono. */
 @Composable
 private fun Consentimiento(marcado: Boolean, onAlternar: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().clickable(role = Role.Checkbox, onClick = onAlternar)
-            .semantics { stateDescription = if (marcado) "Aceptado" else "Sin aceptar" },
+        Modifier.fillMaxWidth().clickable(role = Role.Checkbox, onClick = onAlternar),
         horizontalArrangement = Arrangement.spacedBy(11.dp)
     ) {
         Box(
             Modifier.size(23.dp).clip(RoundedCornerShape(7.dp))
-                .background(if (marcado) Blanco else Blanco.copy(alpha = 0.18f))
-                .border(1.5.dp, Blanco.copy(alpha = 0.6f), RoundedCornerShape(7.dp)),
+                .background(if (marcado) Blanco else AguaProfunda)
+                .border(1.5.dp, Blanco, RoundedCornerShape(7.dp)),
             contentAlignment = Alignment.Center
         ) {
             if (marcado) Icon(painterResource(R.drawable.ic_check), contentDescription = null, modifier = Modifier.size(15.dp), tint = AguaMedia)
         }
         Text(
             "Acepto que la app guarde en mi teléfono los datos de mi hogar y mi consumo. Puedo borrarlos cuando quiera.",
-            fontFamily = FuenteTexto, fontSize = 11.5.sp, lineHeight = 17.sp, fontWeight = FontWeight.Medium, color = Blanco.copy(alpha = 0.8f)
+            fontFamily = FuenteTexto, fontSize = 11.5.sp, lineHeight = 17.sp, fontWeight = FontWeight.Medium, color = Blanco
         )
     }
 }

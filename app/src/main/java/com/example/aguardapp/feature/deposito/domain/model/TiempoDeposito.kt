@@ -18,4 +18,4 @@ internal fun LocalDateTime.masHoras(horas: Double): LocalDateTime {
 }
 
 private fun segundosDesdeEpoca(momento: LocalDateTime): Long =
-    momento.date.toEpochDays().toLong() * SEGUNDOS_POR_DIA + momento.time.toSecondOfDay()
+    momento.date.toEpochDays() * SEGUNDOS_POR_DIA + momento.time.toSecondOfDay()

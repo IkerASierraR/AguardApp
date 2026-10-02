@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "cfa7dabf8a933bd528ede7218a55c174",
+    "identityHash": "7347f32905034bd635d965ef52f6bb0e",
     "entities": [
       {
         "tableName": "usuario",
@@ -30,7 +30,7 @@
       },
       {
         "tableName": "perfil_hogar",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`usuarioId` TEXT NOT NULL, `tipoReservorio` TEXT NOT NULL, `capacidadLitros` REAL NOT NULL, `habitantes` INTEGER NOT NULL, `duchasPorDia` INTEGER NOT NULL, `usaLavadora` INTEGER NOT NULL, `riegaJardin` INTEGER NOT NULL, `consumoPorHabitosLitrosHora` REAL, `consumoVigenteLitrosHora` REAL, PRIMARY KEY(`usuarioId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`usuarioId` TEXT NOT NULL, `tipoReservorio` TEXT NOT NULL, `capacidadLitros` REAL NOT NULL, `habitantes` INTEGER NOT NULL, `duchasPorDia` INTEGER NOT NULL, `usaLavadora` INTEGER NOT NULL, `riegaJardin` INTEGER NOT NULL, `horaProximoLlenado` TEXT NOT NULL, `consumoPorHabitosLitrosHora` REAL, `consumoVigenteLitrosHora` REAL, PRIMARY KEY(`usuarioId`))",
         "fields": [
           {
             "fieldPath": "usuarioId",
@@ -75,6 +75,12 @@
             "notNull": true
           },
           {
+            "fieldPath": "horaProximoLlenado",
+            "columnName": "horaProximoLlenado",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
             "fieldPath": "consumoPorHabitosLitrosHora",
             "columnName": "consumoPorHabitosLitrosHora",
             "affinity": "REAL"
@@ -94,7 +100,7 @@
       },
       {
         "tableName": "evento_llenado",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `usuarioId` TEXT NOT NULL, `momento` TEXT NOT NULL, `tipo` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `usuarioId` TEXT NOT NULL, `momento` TEXT NOT NULL, `litros` REAL NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -115,9 +121,9 @@
             "notNull": true
           },
           {
-            "fieldPath": "tipo",
-            "columnName": "tipo",
-            "affinity": "TEXT",
+            "fieldPath": "litros",
+            "columnName": "litros",
+            "affinity": "REAL",
             "notNull": true
           }
         ],
@@ -169,71 +175,11 @@
             "id"
           ]
         }
-      },
-      {
-        "tableName": "aviso_deposito",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `usuarioId` TEXT NOT NULL, `clave` TEXT NOT NULL, `momento` TEXT NOT NULL, `agotamiento` TEXT NOT NULL, `leido` INTEGER NOT NULL, PRIMARY KEY(`id`))",
-        "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "usuarioId",
-            "columnName": "usuarioId",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "clave",
-            "columnName": "clave",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "momento",
-            "columnName": "momento",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "agotamiento",
-            "columnName": "agotamiento",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "leido",
-            "columnName": "leido",
-            "affinity": "INTEGER",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "id"
-          ]
-        },
-        "indices": [
-          {
-            "name": "index_aviso_deposito_usuarioId_clave",
-            "unique": true,
-            "columnNames": [
-              "usuarioId",
-              "clave"
-            ],
-            "orders": [],
-            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_aviso_deposito_usuarioId_clave` ON `${TABLE_NAME}` (`usuarioId`, `clave`)"
-          }
-        ]
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cfa7dabf8a933bd528ede7218a55c174')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7347f32905034bd635d965ef52f6bb0e')"
     ]
   }
 }

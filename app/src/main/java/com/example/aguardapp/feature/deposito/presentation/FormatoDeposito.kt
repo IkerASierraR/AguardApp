@@ -6,7 +6,7 @@ import kotlinx.datetime.LocalTime
 import kotlinx.datetime.minus
 import kotlinx.datetime.number
 import kotlinx.datetime.plus
-import com.example.aguardapp.feature.deposito.domain.model.horasEntre
+import com.example.aguardapp.feature.deposito.domain.model.TipoReservorio
 import com.example.aguardapp.feature.deposito.domain.model.masHoras
 import kotlin.math.roundToInt
 
@@ -51,24 +51,14 @@ fun describirHora(momento: LocalDateTime, referencia: LocalDateTime): String {
     return if (redondeado.date == referencia.date) formatearHora(redondeado.time) else describirMomento(momento, referencia)
 }
 
-/** Lo que dice la insignia de la campana: nada si no hay avisos sin leer y "9+" desde diez. */
-fun textoDeInsignia(sinLeer: Int): String? = when {
-    sinLeer <= 0 -> null
-    sinLeer > 9 -> "9+"
-    else -> sinLeer.toString()
+fun saludoPara(hora: Int): String = when {
+    hora < 12 -> "Buenos días"
+    hora < 19 -> "Buenas tardes"
+    else -> "Buenas noches"
 }
 
-private fun hora24(hora: LocalTime) = "${hora.hour}:${hora.minute.toString().padStart(2, '0')}"
-
-/** Cuándo pasó algo, como en la lista de avisos: "hace 12 min", "hoy 14:05", "ayer 19:40". */
-fun describirCuando(momento: LocalDateTime, ahora: LocalDateTime): String {
-    val minutos = (horasEntre(momento, ahora) * 60).toInt()
-    if (minutos < 1) return "ahora"
-    if (minutos < 60) return "hace $minutos min"
-    val dia = when (momento.date) {
-        ahora.date -> "hoy"
-        ahora.date.minus(1, DateTimeUnit.DAY) -> "ayer"
-        else -> "${momento.date.day}/${momento.date.month.number}"
-    }
-    return "$dia ${hora24(momento.time)}"
+fun nombreDelTipo(tipo: TipoReservorio): String = when (tipo) {
+    TipoReservorio.TANQUE_ELEVADO -> "Tanque elevado"
+    TipoReservorio.CISTERNA -> "Cisterna"
+    TipoReservorio.BIDONES -> "Bidones"
 }

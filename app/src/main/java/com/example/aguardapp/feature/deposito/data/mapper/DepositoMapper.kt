@@ -7,8 +7,8 @@ import com.example.aguardapp.feature.deposito.data.local.NovedadDepositoEntity
 import com.example.aguardapp.feature.deposito.data.local.PerfilHogarEntity
 import com.example.aguardapp.feature.deposito.domain.model.CapacidadLitros
 import com.example.aguardapp.feature.deposito.domain.model.ClaseIntervalo
+import com.example.aguardapp.feature.deposito.domain.model.ConfiguracionHogar
 import com.example.aguardapp.feature.deposito.domain.model.ConsumoHorario
-import com.example.aguardapp.feature.deposito.domain.model.DatosDelHogar
 import com.example.aguardapp.feature.deposito.domain.model.EventoLlenado
 import com.example.aguardapp.feature.deposito.domain.model.Habitantes
 import com.example.aguardapp.feature.deposito.domain.model.HabitosDelHogar
@@ -18,26 +18,30 @@ import com.example.aguardapp.feature.deposito.domain.model.PerfilHogar
 import com.example.aguardapp.feature.deposito.domain.model.TipoReservorio
 import com.example.aguardapp.feature.deposito.domain.usecase.HistorialDeposito
 
+// Conversiones entre las tablas de Room y los modelos del dominio.
+
 fun PerfilHogar.aEntidad() = PerfilHogarEntity(
     usuarioId = usuarioId,
-    tipoReservorio = tipoReservorio.name,
-    capacidadLitros = capacidad.litros.valor,
-    habitantes = habitantes.cantidad,
-    duchasPorDia = habitos.duchasPorDia,
-    usaLavadora = habitos.usaLavadora,
-    riegaJardin = habitos.riegaJardin,
-    horaProximoLlenado = horaProximoLlenado.toString(),
+    tipoReservorio = configuracion.tipoReservorio.name,
+    capacidadLitros = configuracion.capacidad.litros.valor,
+    habitantes = configuracion.habitantes.cantidad,
+    duchasPorDia = configuracion.habitos.duchasPorDia,
+    usaLavadora = configuracion.habitos.usaLavadora,
+    riegaJardin = configuracion.habitos.riegaJardin,
+    horaProximoLlenado = configuracion.horaProximoLlenado.toString(),
     consumoPorHabitosLitrosHora = consumoPorHabitos?.litrosPorHora,
     consumoVigenteLitrosHora = consumoVigente?.litrosPorHora
 )
 
 fun PerfilHogarEntity.aDominio() = PerfilHogar(
     usuarioId = usuarioId,
-    tipoReservorio = TipoReservorio.valueOf(tipoReservorio),
-    capacidad = CapacidadLitros.deLitros(capacidadLitros),
-    habitantes = Habitantes(habitantes),
-    habitos = HabitosDelHogar(duchasPorDia, usaLavadora, riegaJardin),
-    horaProximoLlenado = LocalTime.parse(horaProximoLlenado),
+    configuracion = ConfiguracionHogar(
+        tipoReservorio = TipoReservorio.valueOf(tipoReservorio),
+        capacidad = CapacidadLitros.deLitros(capacidadLitros),
+        habitantes = Habitantes(habitantes),
+        habitos = HabitosDelHogar(duchasPorDia, usaLavadora, riegaJardin),
+        horaProximoLlenado = LocalTime.parse(horaProximoLlenado)
+    ),
     consumoPorHabitos = consumoPorHabitosLitrosHora?.let(::ConsumoHorario),
     consumoVigente = consumoVigenteLitrosHora?.let(::ConsumoHorario)
 )
@@ -47,23 +51,13 @@ fun EventoLlenado.aEntidad(id: String, usuarioId: String) =
 
 fun EventoLlenadoEntity.aDominio() = EventoLlenado(LocalDateTime.parse(momento), Litros(litros))
 
-fun PerfilHogar.aDatosDelHogar() = DatosDelHogar(capacidad, habitantes, consumoPorHabitos)
-
-fun aHistorial(
-    perfil: PerfilHogar,
-    llenados: List<EventoLlenadoEntity>,
-    novedades: List<NovedadDepositoEntity>
-): HistorialDeposito {
-    return HistorialDeposito(
-        llenados = llenados.map { it.aDominio() },
-        observados = novedades.map { it.aIntervaloObservado() },
-        agotadoEn = novedades.maxOfOrNull { LocalDateTime.parse(it.momento) },
-        consumoVigente = perfil.consumoVigente
-    )
-}
-
-private fun NovedadDepositoEntity.aIntervaloObservado() = IntervaloConsumo(
-    LocalDateTime.parse(inicioObservado), LocalDateTime.parse(momento), Litros(litrosObservados), ClaseIntervalo.OBSERVADO
+/** Junta los llenados y las veces que se quedó sin agua en el historial del depósito. */
+fun aHistorial(llenados: List<EventoLlenadoEntity>, novedades: List<NovedadDepositoEntity>) = HistorialDeposito(
+    llenados = llenados.map { it.aDominio() },
+    observados = novedades.map {
+        IntervaloConsumo(LocalDateTime.parse(it.inicioObservado), LocalDateTime.parse(it.momento), Litros(it.litrosObservados), ClaseIntervalo.OBSERVADO)
+    },
+    agotadoEn = novedades.maxOfOrNull { LocalDateTime.parse(it.momento) }
 )
 
 fun IntervaloConsumo.comoNovedad(id: String, usuarioId: String, momento: LocalDateTime) = NovedadDepositoEntity(

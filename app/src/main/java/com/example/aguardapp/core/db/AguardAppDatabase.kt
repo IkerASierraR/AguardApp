@@ -1,25 +1,25 @@
 package com.example.aguardapp.core.db
 
+import android.content.Context
 import androidx.room.Database
+import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.aguardapp.core.data.local.UsuarioDao
-import com.example.aguardapp.core.data.local.UsuarioEntity
-import com.example.aguardapp.feature.deposito.data.local.AvisoDepositoDao
-import com.example.aguardapp.feature.deposito.data.local.AvisoDepositoEntity
+import com.example.aguardapp.core.data.UsuarioDao
+import com.example.aguardapp.core.data.UsuarioEntity
 import com.example.aguardapp.feature.deposito.data.local.DepositoDao
 import com.example.aguardapp.feature.deposito.data.local.EventoLlenadoEntity
 import com.example.aguardapp.feature.deposito.data.local.NovedadDepositoEntity
 import com.example.aguardapp.feature.deposito.data.local.PerfilHogarEntity
 
-const val NOMBRE_BASE_DE_DATOS = "aguardapp.db"
+private const val NOMBRE_BASE_DE_DATOS = "aguardapp.db"
 
+/** La base de datos local de la app (SQLite con Room). */
 @Database(
     entities = [
         UsuarioEntity::class,
         PerfilHogarEntity::class,
         EventoLlenadoEntity::class,
-        NovedadDepositoEntity::class,
-        AvisoDepositoEntity::class
+        NovedadDepositoEntity::class
     ],
     version = 1,
     exportSchema = true
@@ -27,5 +27,11 @@ const val NOMBRE_BASE_DE_DATOS = "aguardapp.db"
 abstract class AguardAppDatabase : RoomDatabase() {
     abstract fun usuarioDao(): UsuarioDao
     abstract fun depositoDao(): DepositoDao
-    abstract fun avisoDepositoDao(): AvisoDepositoDao
+
+    companion object {
+        fun crear(context: Context): AguardAppDatabase =
+            Room.databaseBuilder(context.applicationContext, AguardAppDatabase::class.java, NOMBRE_BASE_DE_DATOS)
+                .fallbackToDestructiveMigration(dropAllTables = true)
+                .build()
+    }
 }

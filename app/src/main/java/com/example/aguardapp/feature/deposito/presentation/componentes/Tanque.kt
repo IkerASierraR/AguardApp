@@ -1,0 +1,84 @@
+package com.example.aguardapp.feature.deposito.presentation.componentes
+
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.unit.dp
+import com.example.aguardapp.core.ui.theme.Agua
+import com.example.aguardapp.core.ui.theme.AguaClara
+import com.example.aguardapp.core.ui.theme.AguaMedia
+import com.example.aguardapp.core.ui.theme.AguaProfunda
+import com.example.aguardapp.core.ui.theme.Blanco
+import com.example.aguardapp.core.ui.theme.Tenue
+
+// Los dibujos del tanque: el de Mi depósito (con el nivel) y el de Registrar llenado (lleno).
+
+private const val DURACION_ANIMACION_MS = 900
+
+// Alturas de las marcas medidas desde arriba en el Figma (47, 96 y 145 de 196).
+private val MARCAS_INDICADOR = listOf(47f / 196, 96f / 196, 145f / 196)
+
+/** El tanque del Figma (106 × 196) con el agua bajando. */
+@Composable
+fun IndicadorNivelReservorio(fraccion: Float, modifier: Modifier = Modifier) {
+    val nivel by animateFloatAsState(fraccion.coerceIn(0f, 1f), tween(DURACION_ANIMACION_MS))
+    Canvas(modifier.size(width = 106.dp, height = 196.dp)) {
+        val grosorBorde = 2.dp.toPx()
+        val forma = formaDelTanque(size, inset = 0f)
+        // Tanque vacío en azul oscuro y el agua en turquesa claro, ambos sólidos.
+        drawPath(forma, AguaProfunda)
+        clipPath(forma) {
+            val alto = size.height * nivel
+            val superficie = size.height - alto
+            if (alto > 0f) {
+                drawRect(AguaClara, Offset(0f, superficie), Size(size.width, alto))
+            }
+            MARCAS_INDICADOR.forEach { marca ->
+                drawRect(Blanco, Offset(0f, size.height * marca), Size(11.dp.toPx(), 1.5.dp.toPx()))
+            }
+        }
+        drawPath(formaDelTanque(size, inset = grosorBorde / 2), Blanco, style = Stroke(grosorBorde))
+    }
+}
+
+private fun DrawScope.formaDelTanque(tamano: Size, inset: Float): Path =
+    Path().apply {
+        addRoundRect(
+            RoundRect(inset, inset, tamano.width - inset, tamano.height - inset, CornerRadius(20.dp.toPx() - inset))
+        )
+    }
+
+// Alturas de las marcas medidas desde arriba en el Figma (35,5, 73 y 110,5 de 150).
+private val MARCAS_TANQUE_LLENO = listOf(35.5f / 150, 73f / 150, 110.5f / 150)
+
+/** El tanque lleno sobre fondo claro (pantalla "Registrar llenado"): 96 × 150 con las marcas en turquesa. */
+@Composable
+fun TanqueLleno(modifier: Modifier = Modifier) {
+    Canvas(modifier.size(width = 96.dp, height = 150.dp)) {
+        val borde = 2.dp.toPx()
+        val forma = Path().apply { addRoundRect(RoundRect(0f, 0f, size.width, size.height, CornerRadius(18.dp.toPx()))) }
+        drawPath(forma, Tenue)
+        clipPath(forma) {
+            drawRect(Agua, Offset.Zero, size)
+            MARCAS_TANQUE_LLENO.forEach { marca ->
+                drawRect(Blanco, Offset(0f, size.height * marca), Size(9.6.dp.toPx(), 1.5.dp.toPx()))
+            }
+        }
+        val interior = Path().apply {
+            addRoundRect(RoundRect(borde / 2, borde / 2, size.width - borde / 2, size.height - borde / 2, CornerRadius(18.dp.toPx() - borde / 2)))
+        }
+        drawPath(interior, AguaMedia, style = Stroke(borde))
+    }
+}

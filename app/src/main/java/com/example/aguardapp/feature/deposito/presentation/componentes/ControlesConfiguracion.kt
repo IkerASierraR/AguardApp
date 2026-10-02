@@ -24,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -38,19 +37,19 @@ import com.example.aguardapp.core.ui.theme.AguaMedia
 import com.example.aguardapp.core.ui.theme.Blanco
 import com.example.aguardapp.core.ui.theme.Divisor
 import com.example.aguardapp.core.ui.theme.Fondo
-import com.example.aguardapp.core.ui.theme.FuenteNumeros
 import com.example.aguardapp.core.ui.theme.FuenteTexto
 import com.example.aguardapp.core.ui.theme.Tenue
 import com.example.aguardapp.core.ui.theme.Tinta
 import com.example.aguardapp.core.ui.theme.TintaSuave
 import com.example.aguardapp.core.ui.theme.TintaTenue
-import com.example.aguardapp.core.ui.theme.sombraSuave
 import com.example.aguardapp.feature.deposito.domain.model.TipoReservorio
 import kotlin.math.roundToInt
 import com.example.aguardapp.feature.deposito.presentation.CAPACIDAD_MAXIMA_LITROS
 import com.example.aguardapp.feature.deposito.presentation.CAPACIDAD_MINIMA_LITROS
 import com.example.aguardapp.feature.deposito.presentation.PASO_CAPACIDAD_LITROS
 import com.example.aguardapp.feature.deposito.presentation.formatearMiles
+
+// Los controles del formulario "Configurar hogar".
 
 private val OPCIONES_DE_TIPO: List<Triple<TipoReservorio, String, Int>> = listOf(
     Triple(TipoReservorio.TANQUE_ELEVADO, "Tanque elevado", R.drawable.ic_tanque_elevado),
@@ -64,14 +63,6 @@ fun SeccionConfiguracion(titulo: String, modifier: Modifier = Modifier, contenid
         Text(titulo.uppercase(), fontFamily = FuenteTexto, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.88.sp, color = TintaTenue)
         contenido()
     }
-}
-
-@Composable
-fun TarjetaBlanca(modifier: Modifier = Modifier, padding: Int = 18, contenido: @Composable () -> Unit) {
-    Column(
-        modifier.fillMaxWidth().sombraSuave().clip(RoundedCornerShape(18.dp)).background(Blanco).padding(padding.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) { contenido() }
 }
 
 @Composable
@@ -110,7 +101,7 @@ fun ControlDeCapacidad(litros: Int, onCambiar: (Int) -> Unit) {
     TarjetaBlanca {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.Bottom) {
-                Text(formatearMiles(litros), fontFamily = FuenteNumeros, fontSize = 28.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.56).sp, color = Tinta)
+                Text(formatearMiles(litros), fontFamily = FuenteTexto, fontSize = 28.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.56).sp, color = Tinta)
                 Text("L", Modifier.padding(bottom = 4.dp), fontFamily = FuenteTexto, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = TintaTenue)
             }
             Text("típico 1 000 – 2 500 L", Modifier.padding(bottom = 4.dp), fontFamily = FuenteTexto, fontSize = 10.5.sp, fontWeight = FontWeight.Medium, color = TintaTenue)
@@ -132,7 +123,7 @@ private fun PistaDelDeslizador(estado: SliderState) {
     val rango = estado.valueRange
     val avance = ((estado.value - rango.start) / (rango.endInclusive - rango.start)).coerceIn(0f, 1f)
     Box(Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)).background(Tenue)) {
-        Box(Modifier.fillMaxWidth(avance).fillMaxHeight().background(Brush.horizontalGradient(listOf(AguaMedia, Agua))))
+        Box(Modifier.fillMaxWidth(avance).fillMaxHeight().background(AguaMedia))
     }
 }
 
@@ -141,7 +132,7 @@ fun ControlDeHabitantes(valor: Int, onCambiar: (Int) -> Unit) {
     TarjetaBlanca(padding = 16) {
         Row(Modifier.fillMaxWidth().height(44.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             BotonCuadrado("−", Fondo, TintaSuave, 40) { onCambiar(-1) }
-            Text("$valor", fontFamily = FuenteNumeros, fontSize = 30.sp, fontWeight = FontWeight.Bold, color = Tinta)
+            Text("$valor", fontFamily = FuenteTexto, fontSize = 30.sp, fontWeight = FontWeight.Bold, color = Tinta)
             BotonCuadrado("+", Tenue, AguaMedia, 40) { onCambiar(1) }
             Text("define los L/hab·día", fontFamily = FuenteTexto, fontSize = 10.5.sp, fontWeight = FontWeight.Medium, color = TintaTenue)
         }
@@ -152,7 +143,7 @@ fun ControlDeHabitantes(valor: Int, onCambiar: (Int) -> Unit) {
 fun ControlCompacto(valor: Int, onCambiar: (Int) -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
         BotonCuadrado("−", Fondo, TintaSuave, 24) { onCambiar(-1) }
-        Text("$valor", fontFamily = FuenteNumeros, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Tinta)
+        Text("$valor", fontFamily = FuenteTexto, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Tinta)
         BotonCuadrado("+", Tenue, AguaMedia, 24) { onCambiar(1) }
     }
 }
@@ -167,7 +158,7 @@ private fun BotonCuadrado(simbolo: String, fondo: Color, color: Color, tamano: I
     }
 }
 
-/** Una fila de la tarjeta de hábitos: etiqueta a la izquierda y el valor a la derecha, en cifras monoespaciadas. */
+/** Una fila de la tarjeta de hábitos: etiqueta a la izquierda y el valor a la derecha. */
 @Composable
 fun FilaDeHabito(etiqueta: String, modifier: Modifier = Modifier, valor: @Composable () -> Unit) {
     Row(modifier.fillMaxWidth().height(24.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -181,7 +172,7 @@ fun FilaDeHabito(etiqueta: String, modifier: Modifier = Modifier, valor: @Compos
 fun FilaSiNo(etiqueta: String, activo: Boolean, onAlternar: () -> Unit) {
     FilaDeHabito(etiqueta, Modifier.toggleable(value = activo, role = Role.Switch, onValueChange = { onAlternar() })) {
         Text(
-            if (activo) "Sí" else "No", fontFamily = FuenteNumeros, fontSize = 13.sp,
+            if (activo) "Sí" else "No", fontFamily = FuenteTexto, fontSize = 13.sp,
             fontWeight = FontWeight.SemiBold, color = if (activo) AguaMedia else TintaTenue
         )
     }

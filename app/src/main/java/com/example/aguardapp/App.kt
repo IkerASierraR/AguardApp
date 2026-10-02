@@ -1,24 +1,21 @@
 package com.example.aguardapp
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.aguardapp.core.navigation.AppNavHost
+import com.example.aguardapp.core.navigation.InicioViewModel
 import com.example.aguardapp.core.ui.theme.AguardAppTheme
-import com.example.aguardapp.feature.bienvenida.presentation.PuertaDeAcceso
-import com.example.aguardapp.feature.deposito.presentation.DepositoScreen
 
 @Composable
-fun App() {
+fun App(inicio: InicioViewModel = viewModel { InicioViewModel.desdeInyeccion() }) {
     AguardAppTheme {
-        PuertaDeAcceso {
-            // Sin barra inferior, el contenido solo debe respetar la barra de navegación del sistema.
-            Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).navigationBarsPadding()) {
-                DepositoScreen()
-            }
+        val uiState by inicio.uiState.collectAsStateWithLifecycle()
+        // Mientras se decide la primera pantalla no se muestra nada (es una lectura local muy rápida).
+        val rutaInicial = uiState.rutaInicial
+        if (rutaInicial != null) {
+            AppNavHost(rutaInicial, uiState.hayConfiguracion)
         }
     }
 }

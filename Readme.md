@@ -76,7 +76,7 @@ flowchart TD
 | 📊 **Gestionar el depósito** | Saber cuántos litros quedan y hasta cuándo alcanza |
 | 💧 **Registrar llenados** | Un toque cuando llega el agua (completo o a la mitad) |
 | 📉 **Aprender el consumo** | Ajusta la proyección cuando el agua se acaba antes de lo previsto |
-| 🔔 **Avisos proactivos** | Notificaciones antes del agotamiento |
+| ✂️ **Qué recortar** | Sugerencias de ahorro cuando el agua no alcanza hasta el próximo llenado |
 | 📡 **100 % local** | Funciona sin internet: todo se guarda en el teléfono (SQLite) |
 
 ---
@@ -113,7 +113,6 @@ Según el Informe de Factibilidad **(FD01, Versión 1.0)**, el proyecto es viabl
 | **UI** | ![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose-4285F4?style=flat-square&logo=jetpackcompose&logoColor=white) ![Material 3](https://img.shields.io/badge/Material_3-757575?style=flat-square&logo=materialdesign&logoColor=white) |
 | **Base de datos** | ![Room](https://img.shields.io/badge/Room_(SQLite)-003B57?style=flat-square&logo=sqlite&logoColor=white) |
 | **DI** | ![Koin](https://img.shields.io/badge/Koin-F5A623?style=flat-square) |
-| **Tareas** | ![WorkManager](https://img.shields.io/badge/WorkManager-34A853?style=flat-square&logo=android&logoColor=white) |
 | **Fechas** | ![kotlinx.datetime](https://img.shields.io/badge/kotlinx.datetime-7F52FF?style=flat-square) |
 | **Arquitectura** | ![MVVM](https://img.shields.io/badge/MVVM-purple?style=flat-square) ![DDD](https://img.shields.io/badge/DDD-darkblue?style=flat-square) ![Clean Architecture](https://img.shields.io/badge/Clean_Architecture-teal?style=flat-square) |
 
@@ -134,20 +133,21 @@ AguardApp/
 │       ├── 📄 AndroidManifest.xml
 │       ├── 📁 res/                        Recursos (iconos, strings, etc.)
 │       └── 📁 java/com/example/aguardapp/
-│           ├── 📄 AguardApplication.kt    Inicia DB, Koin y tarea horaria
-│           ├── 📄 MainActivity.kt         Permiso de avisos
-│           ├── 📄 App.kt                  Tema + acceso + depósito
+│           ├── 📄 AguardApplication.kt    Inicia la base de datos y Koin
+│           ├── 📄 MainActivity.kt         Muestra la app
+│           ├── 📄 App.kt                  Tema + navegación
 │           │
 │           ├── 📁 core/                   🔧 Infraestructura transversal
 │           │   ├── 📁 data/               Usuario local (UUID) y DAO
 │           │   ├── 📁 db/                 AguardAppDatabase (Room)
-│           │   ├── 📁 di/                 Módulos de Koin
+│           │   ├── 📁 di/                 Koin: base de datos, usuario y repositorio
+│           │   ├── 📁 navigation/         Rutas, NavHost y pantalla inicial
 │           │   ├── 📁 ui/theme/           Colores, tipografías y tema
 │           │   └── 📁 util/               Reloj y UUID
 │           │
-│           └── 📁 feature/               📦 Features (cada uno con DDD)
+│           └── 📁 feature/
 │               ├── 📁 bienvenida/         Pantalla de entrada (solo el primer uso)
-│               └── 📁 deposito/           Depósito de agua del hogar
+│               └── 📁 deposito/           Depósito de agua del hogar (MVVM + DDD)
 │
 └── 📁 informes/                           📋 Documentación académica
     ├── 📄 FD01-Factibilidad.md
@@ -159,15 +159,13 @@ AguardApp/
 
 ### Capas internas de cada Feature
 
-Cada feature sigue el patrón **MVVM + DDD** con estas capas:
+La feature `deposito` sigue el patrón **MVVM + DDD** con estas capas (`bienvenida` solo tiene `presentation/`):
 
 | Capa | Contenido | Depende de |
 |---|---|---|
 | 📐 `domain/` | `model/`, `repository/` (interfaces), `usecase/` — Kotlin puro | Nada |
 | 💾 `data/` | Implementaciones de repositorios, `local/` (Room), `mapper/` | `domain/` |
-| ⚙️ `infrastructure/` | Adaptadores Android: notificaciones y WorkManager | `domain/` |
-| 🔌 `di/` | Módulo de Koin de la feature | Todas |
-| 🖼️ `presentation/` | `*Screen`, `*ViewModel`, `*UiState` (MVVM), `componentes/` | `domain/` |
+| 🖼️ `presentation/` | Por pantalla: `*Screen.kt` y `*ViewModel.kt` (con su `UiState`); `componentes/` con las piezas comunes | `domain/` |
 
 ---
 
@@ -179,12 +177,11 @@ C4Context
 
     Person(user, "Vecino de Tacna", "Hogar que gestiona su reserva de agua durante el racionamiento")
 
-    System(app, "AguardApp", "App Android que gestiona el depósito de agua del hogar y emite avisos")
+    System(app, "AguardApp", "App Android que gestiona el depósito de agua del hogar")
 
-    System_Ext(android, "Android", "Notificaciones y tareas en segundo plano (WorkManager)")
 
     Rel(user, app, "Usa", "Android")
-    Rel(app, android, "Programa avisos", "SDK")
+
 ```
 
 ## 🏗️ Diagrama C4 — Nivel de Contenedores
@@ -199,15 +196,13 @@ C4Container
         Container(ui, "Presentation Layer", "Jetpack Compose", "Screens, ViewModels y UiStates con MVVM")
         Container(domain, "Domain Layer", "Kotlin puro", "Models, UseCases y Repositories (interfaces)")
         Container(data, "Data Layer", "Room", "Implementación de repositorios, DAOs y Entities")
-        Container(infra, "Infrastructure", "WorkManager", "Notificaciones y tareas en segundo plano")
-        ContainerDb(roomdb, "Room Database", "SQLite", "Fuente de verdad local: perfil del hogar, llenados y avisos")
+        ContainerDb(roomdb, "Room Database", "SQLite", "Fuente de verdad local: perfil del hogar y llenados")
     }
 
 
     Rel(user, ui, "Interactúa")
     Rel(ui, domain, "Usa UseCases")
     Rel(data, domain, "Implementa interfaces")
-    Rel(infra, domain, "Implementa interfaces")
     Rel(data, roomdb, "Lee/Escribe")
 ```
 
@@ -221,7 +216,7 @@ C4Component
         Component(screen, "DepositoScreen", "Compose", "Pantalla principal del depósito")
         Component(vm, "DepositoViewModel", "MVVM", "Gestiona el estado de la UI del depósito")
         Component(uc_armar, "ArmarDeposito", "Domain", "Calcula nivel, consumo y agotamiento")
-        Component(uc_avisar, "RecalcularYAvisar", "Domain", "Avisa cuando el agua está por acabarse")
+        Component(uc_deficit, "CalcularDeficit", "Domain", "Litros que faltarán antes del próximo llenado")
         Component(repo_if, "DepositoRepository", "Interface", "Contrato de acceso a datos del depósito")
         Component(repo_impl, "DepositoRepositoryImpl", "Data", "Implementación con Room")
         Component(dao, "DepositoDao", "Room", "Queries SQLite para perfil, llenados y novedades")
@@ -230,7 +225,7 @@ C4Component
     Rel(screen, vm, "Observa UiState")
     Rel(vm, repo_if, "Usa")
     Rel(repo_impl, uc_armar, "Invoca")
-    Rel(uc_avisar, repo_if, "Usa")
+    Rel(vm, uc_deficit, "Invoca")
     Rel(repo_impl, repo_if, "Implementa")
     Rel(repo_impl, dao, "Lee/Escribe")
 ```
@@ -259,14 +254,10 @@ classDiagram
         fechaHora
         tipo
     }
-    class Aviso {
-        agotamiento
-    }
 
     Usuario "1" -- "1" PerfilHogar
     PerfilHogar "1" -- "0..1" Deposito
     Deposito "1" -- "0..*" EventoLlenado
-    Deposito ..> Aviso : genera
 ```
 
 ---

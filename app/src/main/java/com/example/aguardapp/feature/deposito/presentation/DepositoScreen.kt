@@ -1,87 +1,70 @@
 package com.example.aguardapp.feature.deposito.presentation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.aguardapp.R
 import com.example.aguardapp.core.ui.theme.AguaMedia
+import com.example.aguardapp.core.ui.theme.AguaProfunda
+import com.example.aguardapp.core.ui.theme.Blanco
+import com.example.aguardapp.core.ui.theme.Coral
+import com.example.aguardapp.core.ui.theme.Divisor
 import com.example.aguardapp.core.ui.theme.FuenteTexto
 import com.example.aguardapp.core.ui.theme.IconosClarosEnBarraDeEstado
+import com.example.aguardapp.core.ui.theme.Tinta
 import com.example.aguardapp.core.ui.theme.TintaSuave
-import com.example.aguardapp.feature.deposito.presentation.componentes.AvisoDeError
+import com.example.aguardapp.core.ui.theme.TintaTenue
 import com.example.aguardapp.feature.deposito.presentation.componentes.BotonPrincipal
-import com.example.aguardapp.feature.deposito.presentation.componentes.EncabezadoDeposito
-import com.example.aguardapp.feature.deposito.presentation.componentes.TarjetaProyeccion
-import com.example.aguardapp.feature.deposito.presentation.componentes.TarjetasDeConsumo
+import com.example.aguardapp.feature.deposito.presentation.componentes.BotonSecundario
+import com.example.aguardapp.feature.deposito.presentation.componentes.IndicadorNivelReservorio
+import com.example.aguardapp.feature.deposito.presentation.componentes.TarjetaBlanca
 
 private val MARGEN = Modifier.padding(horizontal = 24.dp)
 
-/** Pantalla principal de la app: el depósito y, desde ella, el resto de sus pantallas. */
+/** Mi depósito: el nivel, la proyección y los accesos al resto de pantallas. */
 @Composable
-fun DepositoScreen(viewModel: DepositoViewModel = viewModel { DepositoViewModel.desdeInyeccion() }) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var registrando by rememberSaveable { mutableStateOf(false) }
-    var editandoHogar by rememberSaveable { mutableStateOf(false) }
-    var sinAgua by rememberSaveable { mutableStateOf(false) }
-    var viendoAvisos by rememberSaveable { mutableStateOf(false) }
-
-    when {
-        viendoAvisos -> AvisosScreen(onVolver = { viendoAvisos = false })
-        sinAgua -> SinAguaScreen(onVolver = { sinAgua = false })
-        !uiState.cargando && (!uiState.hogarConfigurado || editandoHogar) -> ConfiguracionScreen(
-            onListo = { editandoHogar = false },
-            onVolver = if (uiState.hogarConfigurado) ({ editandoHogar = false }) else null
-        )
-        registrando -> RegistrarLlenadoScreen(
-            vista = uiState.vista,
-            onEvento = { evento ->
-                viewModel.alEvento(evento)
-                registrando = false
-            },
-            onVolver = { registrando = false }
-        )
-        else -> DepositoContenido(
-            uiState = uiState,
-            onEvento = viewModel::alEvento,
-            onRegistrarLlenado = { registrando = true },
-            onEditarHogar = { editandoHogar = true },
-            onSinAgua = { sinAgua = true },
-            onAvisos = { viendoAvisos = true }
-        )
-    }
-}
-
-@Composable
-fun DepositoContenido(
-    uiState: DepositoUiState,
-    onEvento: (DepositoEvent) -> Unit,
-    onRegistrarLlenado: () -> Unit,
-    onEditarHogar: () -> Unit,
+fun DepositoScreen(
+    onRegistrarLlenado: (TipoLlenado) -> Unit,
+    onQueRecortar: (Int) -> Unit,
     onSinAgua: () -> Unit,
-    onAvisos: () -> Unit
+    onEditarHogar: () -> Unit,
+    viewModel: DepositoViewModel = viewModel { DepositoViewModel.desdeInyeccion() }
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     if (uiState.cargando) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
         return
@@ -89,17 +72,22 @@ fun DepositoContenido(
     val vista = uiState.vista
     IconosClarosEnBarraDeEstado(claros = vista != null)
     Column(
-        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).verticalScroll(rememberScrollState()).padding(bottom = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        if (vista == null) SinDatosDelDeposito() else EncabezadoDeposito(vista, uiState.avisosSinLeer, onAvisos, onEditarHogar)
-        uiState.error?.let { AvisoDeError(it, { onEvento(DepositoEvent.DescartarError) }, MARGEN) }
-        if (vista != null) {
-            TarjetaProyeccion(vista, MARGEN)
-            TarjetasDeConsumo(vista, MARGEN)
+        if (vista == null) {
+            SinDatos(onEditarHogar)
+        } else {
+            Encabezado(vista, onEditarHogar)
+            Proyeccion(vista, MARGEN)
+            Consumo(vista, MARGEN)
         }
-        BotonPrincipal("Registrar llenado", onRegistrarLlenado, MARGEN)
+        BotonPrincipal("Registrar llenado completo", { onRegistrarLlenado(TipoLlenado.COMPLETO) }, MARGEN)
+        BotonSecundario("Registrar llenado parcial", { onRegistrarLlenado(TipoLlenado.PARCIAL) }, MARGEN, color = Tinta)
+        // "Qué recortar" solo tiene sentido cuando el agua no alcanza.
+        if (vista != null && vista.deficitLitros > 0) {
+            BotonSecundario("¿Qué puedo recortar?", { onQueRecortar(vista.deficitLitros) }, MARGEN)
+        }
         if (vista != null) {
             TextButton(onSinAgua, Modifier.align(Alignment.CenterHorizontally)) {
                 Text("Me quedé sin agua antes de lo previsto", fontFamily = FuenteTexto, fontSize = 13.sp, color = AguaMedia, fontWeight = FontWeight.SemiBold)
@@ -108,10 +96,90 @@ fun DepositoContenido(
     }
 }
 
+/** Antes del primer llenado no hay nada que proyectar. */
 @Composable
-private fun SinDatosDelDeposito() {
+private fun SinDatos(onEditarHogar: () -> Unit) {
     Column(Modifier.fillMaxWidth().statusBarsPadding().padding(24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text("Mi depósito", fontFamily = FuenteTexto, fontSize = 26.sp, fontWeight = FontWeight.ExtraBold)
         Text("Aún no tenemos datos de tu depósito. Registra tu primer llenado para ver cuánto te queda.", fontFamily = FuenteTexto, color = TintaSuave)
+        TextButton(onEditarHogar) { Text("Editar mi hogar", fontFamily = FuenteTexto, color = AguaMedia) }
+    }
+}
+
+/** La cabecera de color: saludo, botón de editar el hogar, el tanque y los litros que quedan. */
+@Composable
+private fun Encabezado(vista: DepositoVista, onEditarHogar: () -> Unit) {
+    Column(
+        Modifier.fillMaxWidth()
+            .clip(RoundedCornerShape(bottomStart = 36.dp, bottomEnd = 36.dp))
+            .background(AguaMedia)
+            .statusBarsPadding()
+            .padding(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 40.dp)
+    ) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f).padding(end = 12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(vista.saludo, fontFamily = FuenteTexto, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = Blanco)
+                Text(vista.subtituloHogar, fontFamily = FuenteTexto, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Blanco, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            }
+            Box(
+                Modifier.size(40.dp).clip(RoundedCornerShape(14.dp)).background(AguaProfunda).clickable(role = Role.Button, onClick = onEditarHogar),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(painterResource(R.drawable.ic_ajustes), contentDescription = "Editar mi hogar", modifier = Modifier.size(20.dp), tint = Blanco)
+            }
+        }
+        Spacer(Modifier.height(30.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(22.dp), verticalAlignment = Alignment.CenterVertically) {
+            IndicadorNivelReservorio(vista.porcentaje / 100f)
+            Column {
+                Text(formatearMiles(vista.nivelLitros), fontFamily = FuenteTexto, fontSize = 60.sp, fontWeight = FontWeight.ExtraBold, color = Blanco)
+                Text("litros disponibles", fontFamily = FuenteTexto, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = Blanco)
+                Spacer(Modifier.height(10.dp))
+                Text("${vista.porcentaje} % de ${formatearMiles(vista.capacidadLitros)} L", fontFamily = FuenteTexto, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = Blanco)
+            }
+        }
+        Spacer(Modifier.height(28.dp))
+        Text(vista.textoLlenado, fontFamily = FuenteTexto, fontSize = 11.sp, fontWeight = FontWeight.Medium, color = Blanco)
+    }
+}
+
+/** Nivel actual, hasta cuándo alcanza, el próximo llenado y el déficit. */
+@Composable
+private fun Proyeccion(vista: DepositoVista, modifier: Modifier) {
+    TarjetaBlanca(modifier) {
+        Text("Proyección de hoy", fontFamily = FuenteTexto, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Tinta)
+        HorizontalDivider(Modifier.padding(vertical = 6.dp), color = Divisor)
+        FilaDeDato("Nivel actual", "${formatearMiles(vista.nivelLitros)} L", Tinta)
+        FilaDeDato("Te alcanza hasta", vista.textoAgotamiento, Tinta)
+        FilaDeDato("Próximo llenado", vista.textoProximoLlenado, Tinta)
+        FilaDeDato("Déficit", "${formatearMiles(vista.deficitLitros)} L", if (vista.deficitLitros > 0) Coral else Tinta)
+    }
+}
+
+@Composable
+private fun FilaDeDato(etiqueta: String, valor: String, colorValor: Color) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(etiqueta, fontFamily = FuenteTexto, fontSize = 12.5.sp, fontWeight = FontWeight.Medium, color = TintaSuave)
+        Text(valor, fontFamily = FuenteTexto, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = colorValor)
+    }
+}
+
+/** Consumo por hora y promedio por persona, uno al lado del otro. */
+@Composable
+private fun Consumo(vista: DepositoVista, modifier: Modifier) {
+    Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Cifra("${vista.consumoLitrosPorHora}", "L/h", "consumo estimado")
+        Cifra(vista.litrosPorHabitanteDia?.toString() ?: "—", "L/hab·día", "tu promedio")
+    }
+}
+
+@Composable
+private fun RowScope.Cifra(cifra: String, unidad: String, descripcion: String) {
+    Column(Modifier.weight(1f).clip(RoundedCornerShape(18.dp)).background(Blanco).padding(14.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(3.dp), verticalAlignment = Alignment.Bottom) {
+            Text(cifra, fontFamily = FuenteTexto, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = AguaMedia)
+            Text(unidad, Modifier.padding(bottom = 4.dp), fontFamily = FuenteTexto, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = TintaTenue)
+        }
+        Text(descripcion, fontFamily = FuenteTexto, fontSize = 11.sp, fontWeight = FontWeight.Medium, color = TintaSuave)
     }
 }

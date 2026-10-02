@@ -3,13 +3,11 @@ package com.example.aguardapp.feature.deposito.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
 import org.koin.mp.KoinPlatform
@@ -17,63 +15,87 @@ import com.example.aguardapp.core.util.Reloj
 import com.example.aguardapp.feature.deposito.domain.model.Deposito
 import com.example.aguardapp.feature.deposito.domain.model.PerfilHogar
 import com.example.aguardapp.feature.deposito.domain.repository.DepositoRepository
-import com.example.aguardapp.feature.deposito.domain.repository.RegistroDeAvisos
+import com.example.aguardapp.feature.deposito.domain.usecase.CalcularDeficit
+import kotlin.math.roundToInt
 
-private const val MILIS_POR_MINUTO = 60_000L
+data class DepositoUiState(
+    val cargando: Boolean = true,
+    /** `null` mientras no haya hogar configurado o ningún llenado. */
+    val vista: DepositoVista? = null
+)
 
-// El nivel baja con el tiempo aunque nada cambie en la base, así que la vista se refresca cada minuto.
-private fun cadaMinuto(): Flow<Unit> = flow {
-    while (true) {
-        emit(Unit)
-        delay(MILIS_POR_MINUTO)
-    }
-}
+/** Todo lo que la pantalla "Mi depósito" muestra, ya listo para pintar. */
+data class DepositoVista(
+    val saludo: String,
+    val subtituloHogar: String,
+    val nivelLitros: Int,
+    val capacidadLitros: Int,
+    val porcentaje: Int,
+    val textoLlenado: String,
+    val textoAgotamiento: String,
+    val textoProximoLlenado: String,
+    /** Litros que faltarán antes del próximo llenado; 0 si alcanza. */
+    val deficitLitros: Int,
+    val consumoLitrosPorHora: Int,
+    val litrosPorHabitanteDia: Int?
+)
 
-/** Orquesta: escucha el depósito, pide al dominio lo que hace falta y publica un único estado. */
+/** Escucha el depósito y publica lo que la pantalla tiene que mostrar. */
 class DepositoViewModel(
     private val repositorio: DepositoRepository,
-    private val avisos: RegistroDeAvisos,
-    private val ahora: () -> LocalDateTime,
-    reloj: Flow<Unit> = cadaMinuto()
+    private val ahora: () -> LocalDateTime
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DepositoUiState())
     val uiState: StateFlow<DepositoUiState> = _uiState.asStateFlow()
 
-    private val construirVista = ConstruirVistaDeposito()
+    private val calcularDeficit = CalcularDeficit()
 
     init {
-        viewModelScope.launch {
-            combine(repositorio.observarPerfil(), repositorio.observarDeposito(), avisos.observar(), reloj) { perfil, deposito, guardados, _ ->
-                Triple(perfil, deposito, guardados.count { !it.leido })
-            }.collect { (perfil, deposito, sinLeer) -> publicar(perfil, deposito, sinLeer) }
-        }
-    }
-
-    fun alEvento(evento: DepositoEvent) {
-        viewModelScope.launch {
-            when (evento) {
-                is DepositoEvent.RegistrarLlenado -> repositorio.registrarLlenado(ahora(), evento.tipo)
-                    .onFailure { falla -> _uiState.update { it.copy(error = falla.message) } }
-                DepositoEvent.DescartarError -> _uiState.update { it.copy(error = null) }
+        // El nivel baja con el tiempo aunque nada cambie en la base, así que la vista se refresca cada minuto.
+        val cadaMinuto = flow {
+            while (true) {
+                emit(Unit)
+                delay(60_000L)
             }
         }
+        viewModelScope.launch {
+            combine(repositorio.observarPerfil(), repositorio.observarDeposito(), cadaMinuto) { perfil, deposito, _ -> perfil to deposito }
+                .collect { (perfil, deposito) -> publicar(perfil, deposito) }
+        }
     }
 
-    private suspend fun publicar(perfil: PerfilHogar?, deposito: Deposito?, avisosSinLeer: Int) {
-        val vista = if (perfil == null || deposito == null) {
-            null
-        } else {
-            val hogar = ContextoDelHogar(perfil.tipoReservorio, perfil.habitantes.cantidad)
-            construirVista(deposito, hogar, repositorio.litrosPorHabitanteDia(), ahora())
-        }
-        _uiState.update { it.copy(cargando = false, hogarConfigurado = perfil != null, avisosSinLeer = avisosSinLeer, vista = vista) }
+    // Arma la vista solo si hay hogar configurado y al menos un llenado.
+    private suspend fun publicar(perfil: PerfilHogar?, deposito: Deposito?) {
+        val vista = if (perfil != null && deposito != null) armarVista(perfil, deposito) else null
+        _uiState.value = DepositoUiState(cargando = false, vista = vista)
+    }
+
+    // Convierte el depósito del dominio en los textos y números de la pantalla.
+    private suspend fun armarVista(perfil: PerfilHogar, deposito: Deposito): DepositoVista {
+        val momento = ahora()
+        val nivel = deposito.nivelEn(momento)
+        val habitantes = perfil.habitantes.cantidad
+        val proximoLlenado = calcularDeficit.proximoLlenado(perfil.configuracion.horaProximoLlenado, momento)
+        return DepositoVista(
+            saludo = saludoPara(momento.hour),
+            subtituloHogar = if (habitantes == 1) "1 persona" else "$habitantes personas",
+            nivelLitros = nivel.litros.valor.roundToInt(),
+            capacidadLitros = deposito.capacidad.litros.valor.roundToInt(),
+            porcentaje = nivel.porcentaje.roundToInt(),
+            textoLlenado = "${nombreDelTipo(perfil.configuracion.tipoReservorio)} · último llenado ${describirMomento(deposito.llenado.momento, momento)}",
+            textoAgotamiento = describirMomento(deposito.agotamientoProyectado(), momento),
+            textoProximoLlenado = describirMomento(proximoLlenado, momento),
+            deficitLitros = calcularDeficit.litrosQueFaltan(deposito, proximoLlenado, momento),
+            consumoLitrosPorHora = deposito.consumo.litrosPorHora.roundToInt(),
+            litrosPorHabitanteDia = repositorio.litrosPorHabitanteDia()?.roundToInt()
+        )
     }
 
     companion object {
         fun desdeInyeccion(): DepositoViewModel {
             val koin = KoinPlatform.getKoin()
-            return DepositoViewModel(koin.get(), koin.get(), koin.get<Reloj>()::ahora)
+            return DepositoViewModel(koin.get(), koin.get<Reloj>()::ahora)
         }
     }
 }

@@ -6,28 +6,24 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDateTime
 import com.example.aguardapp.feature.deposito.data.local.DepositoDao
-import com.example.aguardapp.feature.deposito.data.mapper.aDatosDelHogar
 import com.example.aguardapp.feature.deposito.data.mapper.aDominio
 import com.example.aguardapp.feature.deposito.data.mapper.aEntidad
 import com.example.aguardapp.feature.deposito.data.mapper.aHistorial
 import com.example.aguardapp.feature.deposito.data.mapper.comoNovedad
 import com.example.aguardapp.feature.deposito.domain.model.ConfiguracionHogar
-import com.example.aguardapp.feature.deposito.domain.model.ConsumoHorario
-import com.example.aguardapp.feature.deposito.domain.model.DatosDelHogar
+import com.example.aguardapp.feature.deposito.domain.model.Deposito
 import com.example.aguardapp.feature.deposito.domain.model.EventoLlenado
-import com.example.aguardapp.feature.deposito.domain.model.LitrosPorHabitanteDia
+import com.example.aguardapp.feature.deposito.domain.model.Litros
 import com.example.aguardapp.feature.deposito.domain.model.PerfilHogar
 import com.example.aguardapp.feature.deposito.domain.model.PrevisualizacionSinAgua
-import com.example.aguardapp.feature.deposito.domain.model.Deposito
-import com.example.aguardapp.feature.deposito.domain.model.Litros
 import com.example.aguardapp.feature.deposito.domain.repository.DepositoRepository
 import com.example.aguardapp.feature.deposito.domain.usecase.ArmarDeposito
-import com.example.aguardapp.feature.deposito.domain.usecase.CalcularLitrosPorHabitanteDia
 import com.example.aguardapp.feature.deposito.domain.usecase.DeclararSinAgua
+import com.example.aguardapp.feature.deposito.domain.usecase.EstimarConsumo
 import com.example.aguardapp.feature.deposito.domain.usecase.HistorialDeposito
 import com.example.aguardapp.feature.deposito.domain.usecase.ResultadoSinAgua
 
-/** Lee y escribe solo en Room: la base local es la fuente de verdad (constitución, artículo II). */
+/** Lee y escribe solo en Room: la base local es la fuente de verdad. */
 class DepositoRepositoryImpl(
     private val dao: DepositoDao,
     private val usuarioId: String,
@@ -35,81 +31,61 @@ class DepositoRepositoryImpl(
     private val nuevoId: () -> String
 ) : DepositoRepository {
 
-    private class Estado(val perfil: PerfilHogar, val historial: HistorialDeposito) {
-        val hogar: DatosDelHogar get() = perfil.aDatosDelHogar()
-    }
+    private val estimar = EstimarConsumo()
 
     override fun observarPerfil(): Flow<PerfilHogar?> = dao.observarPerfil(usuarioId).map { it?.aDominio() }
 
-    override suspend fun guardarPerfil(configuracion: ConfiguracionHogar, consumoPorHabitos: ConsumoHorario?): Result<Unit> =
-        runCatching {
-            val perfil = PerfilHogar(
-                usuarioId, configuracion.tipoReservorio, configuracion.capacidad,
-                configuracion.habitantes, configuracion.habitos, configuracion.horaProximoLlenado, consumoPorHabitos
-            )
-            dao.guardarPerfil(perfil.aEntidad())
-        }
+    override suspend fun guardarPerfil(configuracion: ConfiguracionHogar): Result<Unit> = runCatching {
+        // El consumo por hábitos se recalcula con la nueva configuración; el aprendido se descarta.
+        val consumoPorHabitos = estimar.porHabitos(configuracion.habitos, configuracion.habitantes)
+        dao.guardarPerfil(PerfilHogar(usuarioId, configuracion, consumoPorHabitos).aEntidad())
+    }
 
     override fun observarDeposito(): Flow<Deposito?> =
-        combine(
-            dao.observarPerfil(usuarioId),
-            dao.observarLlenados(usuarioId),
-            dao.observarNovedades(usuarioId)
-        ) { perfil, llenados, novedades ->
-            perfil?.aDominio()?.let { armar(Estado(it, aHistorial(it, llenados, novedades))) }
+        combine(dao.observarPerfil(usuarioId), dao.observarLlenados(usuarioId), dao.observarNovedades(usuarioId)) { perfil, llenados, novedades ->
+            perfil?.aDominio()?.let { ArmarDeposito()(it, aHistorial(llenados, novedades), ahora()) }
         }
 
-    override suspend fun litrosPorHabitanteDia(): LitrosPorHabitanteDia? {
-        val estado = cargarEstado() ?: return null
-        return CalcularLitrosPorHabitanteDia()(estado.historial.intervalos(estado.hogar), estado.hogar.habitantes)
+    override suspend fun litrosPorHabitanteDia(): Double? {
+        val (perfil, historial) = cargar() ?: return null
+        return estimar.litrosPorHabitanteDia(historial.intervalos(perfil), perfil.habitantes)
     }
 
-    override suspend fun registrarLlenado(momento: LocalDateTime, litros: Litros): Result<Unit> =
-        runCatching {
-            require(momento <= ahora()) { "No se puede registrar un llenado en el futuro" }
-            val estado = requireNotNull(cargarEstado()) { SIN_PERFIL }
-            require(litros > Litros.CERO && litros <= estado.perfil.capacidad.litros) { "Los litros deben ser mayores que 0 y no superar la capacidad" }
-            dao.guardarLlenado(EventoLlenado(momento, litros).aEntidad(nuevoId(), usuarioId))
-            dao.guardarPerfil(estado.perfil.copy(consumoVigente = null).aEntidad())
-        }
+    override suspend fun registrarLlenado(momento: LocalDateTime, litros: Litros): Result<Unit> = runCatching {
+        require(momento <= ahora()) { "No se puede registrar un llenado en el futuro" }
+        val (perfil, _) = requireNotNull(cargar()) { SIN_PERFIL }
+        require(litros > Litros.CERO && litros <= perfil.capacidad.litros) { "Los litros deben ser mayores que 0 y no superar la capacidad" }
+        dao.guardarLlenado(EventoLlenado(momento, litros).aEntidad(nuevoId(), usuarioId))
+        // Con un llenado nuevo, el consumo vuelve a estimarse con todo el historial.
+        dao.guardarPerfil(perfil.copy(consumoVigente = null).aEntidad())
+    }
 
-    override suspend fun declararSinAgua(momento: LocalDateTime): Result<Unit> =
-        runCatching {
-            val simulacion = simularSinAgua(momento)
-            val resultado = simulacion.resultado
-            dao.guardarNovedad(resultado.intervaloObservado.comoNovedad(nuevoId(), usuarioId, momento))
-            dao.guardarPerfil(simulacion.estado.perfil.copy(consumoVigente = resultado.deposito.consumo).aEntidad())
-        }
+    override suspend fun declararSinAgua(momento: LocalDateTime): Result<Unit> = runCatching {
+        val (perfil, _, resultado) = simularSinAgua(momento)
+        dao.guardarNovedad(resultado.intervaloObservado.comoNovedad(nuevoId(), usuarioId, momento))
+        dao.guardarPerfil(perfil.copy(consumoVigente = resultado.deposito.consumo).aEntidad())
+    }
 
-    override suspend fun previsualizarSinAgua(momento: LocalDateTime): Result<PrevisualizacionSinAgua> =
-        runCatching {
-            val simulacion = simularSinAgua(momento)
-            PrevisualizacionSinAgua(
-                agotamientoProyectado = simulacion.deposito.agotamientoProyectado(),
-                momento = momento,
-                consumoActual = simulacion.deposito.consumo,
-                consumoNuevo = simulacion.resultado.deposito.consumo
-            )
-        }
+    override suspend fun previsualizarSinAgua(momento: LocalDateTime): Result<PrevisualizacionSinAgua> = runCatching {
+        val (_, deposito, resultado) = simularSinAgua(momento)
+        PrevisualizacionSinAgua(deposito.agotamientoProyectado(), momento, deposito.consumo, resultado.deposito.consumo)
+    }
 
-    private class Simulacion(val estado: Estado, val deposito: Deposito, val resultado: ResultadoSinAgua)
-
-    private suspend fun simularSinAgua(momento: LocalDateTime): Simulacion {
+    // Calcula qué pasaría al declarar que se quedó sin agua, sin guardar nada.
+    private suspend fun simularSinAgua(momento: LocalDateTime): Triple<PerfilHogar, Deposito, ResultadoSinAgua> {
         require(momento <= ahora()) { "No se puede declarar en el futuro" }
-        val estado = requireNotNull(cargarEstado()) { SIN_PERFIL }
-        val deposito = checkNotNull(armar(estado)) { "Aún no hay un depósito que declarar sin agua" }
-        val resultado = DeclararSinAgua()(deposito, estado.historial.intervalos(estado.hogar), momento)
-        return Simulacion(estado, deposito, resultado)
+        val (perfil, historial) = requireNotNull(cargar()) { SIN_PERFIL }
+        val deposito = checkNotNull(ArmarDeposito()(perfil, historial, ahora())) { "Aún no hay un depósito que declarar sin agua" }
+        val resultado = DeclararSinAgua()(deposito, historial.intervalos(perfil), momento)
+        return Triple(perfil, deposito, resultado)
     }
 
-    private suspend fun cargarEstado(): Estado? {
+    // Lee una sola vez el perfil y el historial; `null` si el hogar aún no está configurado.
+    private suspend fun cargar(): Pair<PerfilHogar, HistorialDeposito>? {
         val perfil = dao.observarPerfil(usuarioId).first()?.aDominio() ?: return null
-        val llenados = dao.observarLlenados(usuarioId).first()
-        val novedades = dao.observarNovedades(usuarioId).first()
-        return Estado(perfil, aHistorial(perfil, llenados, novedades))
+        val historial = aHistorial(dao.observarLlenados(usuarioId).first(), dao.observarNovedades(usuarioId).first())
+        return perfil to historial
     }
-
-    private fun armar(estado: Estado): Deposito? = ArmarDeposito()(estado.hogar, estado.historial, ahora())
 
     private companion object {
         const val SIN_PERFIL = "Configura tu hogar antes de registrar movimientos"
