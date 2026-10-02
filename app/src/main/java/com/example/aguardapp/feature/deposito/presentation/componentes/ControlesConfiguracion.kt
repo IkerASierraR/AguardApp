@@ -49,8 +49,6 @@ import com.example.aguardapp.feature.deposito.presentation.CAPACIDAD_MINIMA_LITR
 import com.example.aguardapp.feature.deposito.presentation.PASO_CAPACIDAD_LITROS
 import com.example.aguardapp.feature.deposito.presentation.formatearMiles
 
-// Los controles del formulario "Configurar hogar".
-
 private val OPCIONES_DE_TIPO: List<Triple<TipoReservorio, String, Int>> = listOf(
     Triple(TipoReservorio.TANQUE_ELEVADO, "Tanque elevado", R.drawable.ic_tanque_elevado),
     Triple(TipoReservorio.CISTERNA, "Cisterna", R.drawable.ic_cisterna),
@@ -158,7 +156,6 @@ private fun BotonCuadrado(simbolo: String, fondo: Color, color: Color, tamano: I
     }
 }
 
-/** Una fila de la tarjeta de hábitos: etiqueta a la izquierda y el valor a la derecha. */
 @Composable
 fun FilaDeHabito(etiqueta: String, modifier: Modifier = Modifier, valor: @Composable () -> Unit) {
     Row(modifier.fillMaxWidth().height(24.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -167,7 +164,6 @@ fun FilaDeHabito(etiqueta: String, modifier: Modifier = Modifier, valor: @Compos
     }
 }
 
-/** "Sí" en turquesa y "No" en gris; tocar la fila lo alterna. */
 @Composable
 fun FilaSiNo(etiqueta: String, activo: Boolean, onAlternar: () -> Unit) {
     FilaDeHabito(etiqueta, Modifier.toggleable(value = activo, role = Role.Switch, onValueChange = { onAlternar() })) {

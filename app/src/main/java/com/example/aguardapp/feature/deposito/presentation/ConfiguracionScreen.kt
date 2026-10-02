@@ -50,10 +50,6 @@ import com.example.aguardapp.feature.deposito.presentation.componentes.TextoDeEr
 
 private val MARGEN = Modifier.padding(horizontal = 24.dp)
 
-/**
- * Configurar hogar: se usa al inicio y para editar desde Mi depósito.
- * El botón Guardar queda fijo abajo; el formulario se desplaza.
- */
 @Composable
 fun ConfiguracionScreen(
     onListo: () -> Unit,
@@ -106,13 +102,11 @@ fun ConfiguracionScreen(
     }
 }
 
-/** Muestra la hora elegida y abre el selector de hora del sistema para cambiarla. */
 @Composable
 private fun TarjetaDeHora(hora: LocalTime?, onElegir: (LocalTime) -> Unit) {
     var eligiendo by rememberSaveable { mutableStateOf(false) }
     TarjetaBlanca {
         Text("Hora en que suele llegar el agua", fontFamily = FuenteTexto, fontSize = 12.5.sp, fontWeight = FontWeight.Medium, color = TintaSuave)
-        // La hora elegida en grande y, a su lado, el botón para cambiarla.
         Row(
             Modifier.fillMaxWidth().padding(vertical = 4.dp),
             horizontalArrangement = Arrangement.SpaceBetween,

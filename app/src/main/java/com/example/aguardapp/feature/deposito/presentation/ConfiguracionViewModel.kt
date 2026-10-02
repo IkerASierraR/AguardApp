@@ -32,14 +32,13 @@ data class ConfiguracionUiState(
     val duchasPorDia: Int = 2,
     val usaLavadora: Boolean = true,
     val riegaJardin: Boolean = false,
-    /** La hora a la que suele llegar el agua; `null` mientras no la elija. */
     val horaProximoLlenado: LocalTime? = null,
     val consumoEstimadoLitrosPorHora: Int = 0,
     val guardando: Boolean = false,
     val guardado: Boolean = false,
     val error: String? = null
 ) {
-    // Mensajes de error que se muestran debajo de cada campo; `null` si el campo está bien.
+
     val errorCapacidad: String?
         get() = if (capacidadLitros in CAPACIDAD_MINIMA_LITROS..CAPACIDAD_MAXIMA_LITROS) null
         else "La capacidad debe estar entre $CAPACIDAD_MINIMA_LITROS y $CAPACIDAD_MAXIMA_LITROS L"
@@ -50,12 +49,10 @@ data class ConfiguracionUiState(
     val errorHora: String?
         get() = if (horaProximoLlenado != null) null else "Elige la hora a la que suele llegar el agua"
 
-    /** El botón Guardar solo se habilita cuando no hay errores. */
     val puedeGuardar: Boolean
         get() = errorCapacidad == null && errorHabitantes == null && errorHora == null && !guardando
 }
 
-/** El formulario de "Configurar hogar": se usa al inicio y para editar desde Mi depósito. */
 class ConfiguracionViewModel(private val repositorio: DepositoRepository) : ViewModel() {
 
     private val estimar = EstimarConsumo()
@@ -67,7 +64,6 @@ class ConfiguracionViewModel(private val repositorio: DepositoRepository) : View
         cargarPerfilGuardado()
     }
 
-    // Si el hogar ya estaba configurado, el formulario viene lleno.
     private fun cargarPerfilGuardado() {
         viewModelScope.launch {
             val configuracion = repositorio.observarPerfil().first()?.configuracion ?: return@launch
@@ -92,11 +88,9 @@ class ConfiguracionViewModel(private val repositorio: DepositoRepository) : View
     fun onCapacidadChange(litros: Int) =
         _uiState.update { it.copy(capacidadLitros = litros.coerceIn(CAPACIDAD_MINIMA_LITROS, CAPACIDAD_MAXIMA_LITROS)) }
 
-    /** Suma o resta un habitante (diferencia = +1 o -1). */
     fun onHabitantesChange(diferencia: Int) =
         _uiState.update { conConsumo(it.copy(habitantes = (it.habitantes + diferencia).coerceIn(1, HABITANTES_MAXIMOS))) }
 
-    /** Suma o resta una ducha por día (diferencia = +1 o -1). */
     fun onDuchasChange(diferencia: Int) =
         _uiState.update { conConsumo(it.copy(duchasPorDia = (it.duchasPorDia + diferencia).coerceIn(0, DUCHAS_MAXIMAS))) }
 
@@ -108,7 +102,6 @@ class ConfiguracionViewModel(private val repositorio: DepositoRepository) : View
 
     fun onDescartarError() = _uiState.update { it.copy(error = null) }
 
-    /** Guarda la configuración si no hay errores. */
     fun onGuardar() {
         val estado = _uiState.value
         val hora = estado.horaProximoLlenado
@@ -127,7 +120,6 @@ class ConfiguracionViewModel(private val repositorio: DepositoRepository) : View
         }
     }
 
-    // Recalcula el consumo estimado que se muestra al usuario cuando cambian los hábitos o los habitantes.
     private fun conConsumo(estado: ConfiguracionUiState): ConfiguracionUiState {
         val habitos = HabitosDelHogar(estado.duchasPorDia, estado.usaLavadora, estado.riegaJardin)
         val consumo = estimar.porHabitos(habitos, Habitantes(estado.habitantes))
