@@ -3,7 +3,7 @@
 > **Universidad Privada de Tacna** · Facultad de Ingeniería · Escuela Profesional de Ingeniería de Sistemas
 > **Curso:** Soluciones Móviles I · **Docente:** Mag. Alberto Johnatan Flor Rodríguez
 > **Proyecto:** AguardApp
-> **Versión:** 1.0 · Tacna – Perú, 2026
+> **Versión:** 2.0 · Tacna – Perú, 2026
 
 **Integrantes**
 
@@ -19,6 +19,7 @@
 | Versión | Hecha por | Revisada por | Aprobada por | Fecha | Motivo |
 |---|---|---|---|---|---|
 | 1.0 | DJ - JL - CM - IS | AFR | AFR | 30/09/2026 | Versión Original |
+| 2.0 | DJ - JL - CM - IS | — | — | 02/10/2026 | Actualización al sistema AguardApp: aplicación Android nativa, módulo Depósito y base de datos local |
 
 ## Índice
 
@@ -40,32 +41,38 @@
 
 El presente documento constituye el Informe Final del proyecto AguardApp, desarrollado por el equipo de desarrollo AguardApp.
 
-AguardApp es una aplicación móvil multiplataforma (Android e iOS) que ayuda a los hogares de Tacna a gestionar su reserva domiciliaria de agua y anticipar los cortes durante el racionamiento del servicio. Este informe consolida el trabajo realizado durante el proyecto, integrando los documentos elaborados en cada etapa: el Informe de Factibilidad (FD01), el Documento de Visión (FD02), la Especificación de Requerimientos de Software (FD03) y el Documento de Arquitectura de Software (FD04), que se adjuntan como anexos.
+El proyecto nació como **AguaTacna**, una aplicación Kotlin Multiplatform (Android e iOS) con varios módulos: reserva, sector y mapas, recibos, retos, asistente hídrico y sincronización con la nube. Durante el desarrollo, el equipo decidió concentrar el esfuerzo en el problema central —saber cuánta agua le queda al hogar y hasta cuándo le alcanza— y migró la solución a **AguardApp**, una aplicación **Android nativa** con un único módulo funcional, **Depósito**, que trabaja por completo con una base de datos local.
+
+Este informe consolida el trabajo realizado e integra los documentos elaborados en cada etapa: el Informe de Factibilidad (FD01), el Documento de Visión (FD02), la Especificación de Requerimientos de Software (FD03) y el Documento de Arquitectura de Software (FD04), que se adjuntan como anexos.
 
 ## 2. Planteamiento del Problema
 
 ### 2.1. Problema
 
-La ciudad de Tacna, ubicada en una de las regiones más áridas del Perú, se abastece de agua potable bajo un esquema de racionamiento por sectores, con servicio solo durante algunas horas al día y en horarios que varían por zona. Los hogares no cuentan con información clara y oportuna sobre cuándo llegará el agua a su sector ni sobre cuánta reserva les queda, lo que ocasiona desabastecimiento imprevisto, compra de agua de emergencia a sobreprecio y desperdicio del recurso. La información oficial se difunde de manera dispersa y poco confiable, lo que agrava la mala planificación del consumo.
+La ciudad de Tacna, ubicada en una de las regiones más áridas del Perú, se abastece de agua potable bajo un esquema de racionamiento, con servicio solo durante algunas horas al día. Los hogares guardan agua en tanques, cisternas o bidones, pero no saben cuánta les queda ni hasta qué hora les alcanzará. Esto ocasiona desabastecimiento imprevisto, compra de agua de emergencia a sobreprecio y un consumo que no se ajusta a tiempo.
 
 ### 2.2. Justificación
 
-El desarrollo de AguardApp se justifica por la necesidad de poner en manos del ciudadano información confiable y anticipada sobre el abastecimiento de agua. Desde la perspectiva social, reduce la incertidumbre y el estrés de las familias y fomenta la organización vecinal mediante un modelo colaborativo. Desde la perspectiva económica, disminuye los gastos por compra de agua de emergencia. Desde la perspectiva ambiental, promueve el ahorro y el consumo responsable de un recurso escaso. Y desde la perspectiva técnica, demuestra la viabilidad de una solución multiplataforma, gratuita y con operación sin conexión, construida con buenas prácticas de ingeniería de software.
+El desarrollo de AguardApp se justifica por la necesidad de que cada hogar conozca el estado de su depósito y anticipe cuándo se quedará sin agua. Desde la perspectiva social, reduce la incertidumbre y el estrés de las familias. Desde la perspectiva económica, disminuye los gastos por compra de agua de emergencia. Desde la perspectiva ambiental, promueve el ahorro con recomendaciones concretas cuando el agua no alcanza. Y desde la perspectiva técnica, demuestra que una aplicación simple, gratuita y sin conexión, construida con buenas prácticas (MVVM + DDD), resuelve el problema principal sin depender de servicios externos.
 
 ### 2.3. Alcance
 
 **Dentro del alcance del proyecto se considera:**
 
-- Gestión de la reserva del hogar: nivel actual, proyección de agotamiento y recomendaciones de ahorro.
-- Asociación del domicilio a su sector, con cronograma de abastecimiento y cisternas cercanas sobre un mapa.
-- Modelo colaborativo de confirmación de la llegada y el corte del agua.
-- Operación sin conexión (Room) con sincronización en la nube (Supabase).
-- Digitalización del recibo de EPS Tacna y retos de ahorro.
+- Bienvenida con consentimiento para guardar los datos en el teléfono.
+- Configuración del hogar: tipo y capacidad del depósito, habitantes, hábitos y hora habitual de llegada del agua.
+- Registro de llenados completos o parciales.
+- Cálculo del nivel actual, de la hora de agotamiento y del déficit de litros hasta el próximo llenado.
+- Recomendaciones de recorte de consumo según los hábitos del hogar.
+- Declaración de "me quedé sin agua", con la que la aplicación aprende el consumo real.
+- Operación 100 % sin conexión con una base de datos local (Room / SQLite).
 
 **Fuera del alcance del proyecto se considera:**
 
-- El panel administrativo web para la carga masiva de sectorización por parte de la EPS.
-- La integración con los sistemas internos de EPS Tacna y la paridad total de funcionalidades en iOS.
+- La consulta del sector, los cronogramas oficiales y el mapa de cisternas.
+- La digitalización de recibos, los retos y reportes ciudadanos y el asistente hídrico.
+- La sincronización en la nube, el inicio de sesión con Google y las notificaciones.
+- La versión para iOS y la integración con los sistemas de EPS Tacna.
 
 El proyecto se ejecuta entre agosto y diciembre de 2026, con una inversión estimada de S/ 17,720.00 cubierta con recursos propios del equipo.
 
@@ -73,36 +80,36 @@ El proyecto se ejecuta entre agosto y diciembre de 2026, con una inversión esti
 
 ### 3.1. Objetivo general
 
-Desarrollar una aplicación móvil que permita a los hogares de Tacna planificar y optimizar el uso de su reserva domiciliaria de agua durante el racionamiento, anticipando los cortes del servicio.
+Desarrollar una aplicación móvil que permita a los hogares de Tacna conocer y planificar el uso del agua de su depósito durante el racionamiento, anticipando cuándo se quedarán sin agua.
 
 ### 3.2. Objetivos específicos
 
-- **Gestionar la reserva del hogar:** calcular el nivel de la reserva, proyectar su agotamiento y recomendar recortes de consumo.
-- **Asociar el domicilio a su sector:** asociar el domicilio al sector y mostrar su cronograma y los puntos de cisterna cercanos.
-- **Implementar el modelo colaborativo:** estimar el horario del sector a partir de las confirmaciones de los vecinos.
-- **Operar sin conexión:** funcionar sin conexión y sincronizar con la nube garantizando la privacidad de los datos.
+- **Gestionar el depósito del hogar:** calcular el nivel actual y proyectar hasta cuándo alcanza el agua.
+- **Anticipar la falta de agua:** calcular el déficit de litros hasta el próximo llenado y recomendar recortes de consumo.
+- **Aprender el consumo real:** ajustar la estimación con el historial de llenados y las declaraciones de "me quedé sin agua".
+- **Operar sin conexión y con privacidad:** funcionar sin internet y sin sacar datos del teléfono.
 
 ## 4. Marco Teórico
 
 ### Racionamiento del agua y gestión del recurso hídrico
 
-El racionamiento del agua es una medida de distribución del servicio por horarios y zonas ante la escasez del recurso. En ciudades como Tacna, de clima desértico, el acceso al agua potable es intermitente, lo que exige a los hogares planificar su reserva. La gestión eficiente del recurso hídrico a nivel domiciliario requiere información oportuna sobre el abastecimiento y el consumo.
+El racionamiento del agua es una medida de distribución del servicio por horarios ante la escasez del recurso. En ciudades como Tacna, de clima desértico, el acceso al agua potable es intermitente, lo que exige a los hogares almacenar agua y planificar su consumo hasta el siguiente abastecimiento.
 
-### Desarrollo móvil multiplataforma (Kotlin Multiplatform y Compose)
+### Desarrollo móvil nativo (Kotlin y Jetpack Compose)
 
-Kotlin Multiplatform (KMP) permite compartir la lógica de negocio entre Android e iOS con un solo código, mientras que Compose Multiplatform ofrece una interfaz declarativa común. Este enfoque reduce el tiempo y el costo de desarrollo y facilita el mantenimiento de la aplicación.
+Kotlin es el lenguaje recomendado para Android, y Jetpack Compose es su kit de interfaz declarativa: la pantalla se describe en función de su estado y se vuelve a dibujar sola cuando el estado cambia. Esto simplifica el código de la interfaz y reduce errores.
 
-### Arquitectura limpia y diseño offline-first
+### Arquitectura MVVM + DDD y diseño offline-first
 
-La arquitectura limpia separa el sistema en capas (presentación, dominio y datos) con el dominio independiente de frameworks, lo que facilita las pruebas y la portabilidad. El diseño offline-first establece la base de datos local (Room) como única fuente de verdad, tratando la red como un mecanismo de sincronización; así la aplicación funciona aun sin conexión, requisito esencial en los sectores periféricos.
+El patrón MVVM separa la pantalla (View) de su lógica de presentación (ViewModel), que expone un estado observable (`StateFlow<UiState>`). El diseño guiado por el dominio (DDD) organiza el código alrededor de los conceptos del problema —depósito, llenado, consumo, déficit— en una capa de dominio independiente de Android. El diseño offline-first establece la base de datos local (Room) como única fuente de verdad, de modo que la aplicación funciona aun sin conexión.
 
-### Backend en la nube y seguridad (Supabase y RLS)
+### Estimación del consumo con datos del propio hogar
 
-Supabase es una plataforma en la nube que ofrece una base de datos PostgreSQL, autenticación y una API REST automática. La seguridad a nivel de fila (Row Level Security, RLS) garantiza que cada usuario acceda únicamente a sus propios datos, cumpliendo con la privacidad por diseño exigida por la Ley N.° 29733.
+AguardApp estima el consumo con el historial real del hogar (los intervalos entre llenados y los momentos en que se quedó sin agua) y usa la mediana, un estadístico robusto frente a datos erróneos. Si aún no hay historial suficiente, estima a partir de los hábitos declarados.
 
-### Sistemas colaborativos de datos
+### Privacidad por diseño
 
-Los sistemas colaborativos obtienen información de los propios usuarios (crowdsourcing). En AguardApp, los vecinos confirman la llegada y el corte del agua, y el sistema estima el horario del sector mediante la mediana de las confirmaciones, un estadístico robusto frente a reportes erróneos.
+La Ley N.° 29733 exige proteger los datos personales. AguardApp aplica la privacidad por diseño: todos los datos se guardan en el teléfono, no se envían a ningún servidor y la aplicación no solicita permisos del sistema.
 
 ## 5. Desarrollo de la Solución
 
@@ -110,25 +117,25 @@ Los sistemas colaborativos obtienen información de los propios usuarios (crowds
 
 | Dimensión | Resultado | Sustento |
 |---|---|---|
-| Técnica | **Factible** | El equipo domina las tecnologías seleccionadas (todas gratuitas y de código abierto) y cuenta con un producto mínimo viable operativo que valida la arquitectura, incluyendo la pantalla de sector con mapa, la gestión de la reserva y la sincronización real con Supabase. |
-| Económica | **Viable** | La inversión estimada es de S/ 17,720.00, con un VAN de S/ 3,176.00, una TIR del 22.2 % y una relación beneficio/costo de 1.14, según el Informe de Factibilidad (FD01). |
-| Operativa | **Factible** | La aplicación es intuitiva, funciona sin conexión y no requiere personal adicional para su operación; los hogares la usan con un teléfono de gama básica. |
-| Social | **Positiva** | Promueve el acceso equitativo al agua, la organización vecinal y el consumo responsable, contribuyendo a los ODS 6, 9, 11 y 12. |
-| Legal | **Factible** | Cumple la Ley N.° 29733 de Protección de Datos Personales mediante la privacidad por diseño (almacenamiento a nivel de sector y seguridad por fila) y utiliza software libre conforme a sus licencias. |
-| Ambiental | **Positiva** | Incentiva el ahorro y evita el desperdicio del agua, un recurso escaso en Tacna, sin generar residuos físicos ni requerir hardware de alto consumo. |
+| Técnica | **Factible** | El equipo domina las tecnologías seleccionadas (todas gratuitas y de código abierto). La aplicación compila y funciona como un único APK, sin depender de servidores. |
+| Económica | **Viable** | La inversión estimada es de S/ 17,720.00, con un VAN de S/ 3,176.00, una TIR del 22.2 % y una relación beneficio/costo de 1.14, según el Informe de Factibilidad (FD01). Al no usar servicios en la nube, no hay costos de operación adicionales. |
+| Operativa | **Factible** | La aplicación es simple, funciona sin conexión y no requiere personal adicional; los hogares la usan con un teléfono de gama básica (Android 7.0 o superior). |
+| Social | **Positiva** | Ayuda a las familias a anticipar la falta de agua y a consumir de forma responsable, contribuyendo a los ODS 6, 11 y 12. |
+| Legal | **Factible** | Cumple la Ley N.° 29733: ningún dato sale del teléfono y la aplicación no solicita permisos. Utiliza software libre conforme a sus licencias. |
+| Ambiental | **Positiva** | Incentiva el ahorro y evita el desperdicio del agua, un recurso escaso en Tacna, sin generar residuos físicos. |
 
 ### 5.2. Tecnología de Desarrollo
 
-La solución se construye con un conjunto de tecnologías gratuitas y de código abierto. La siguiente tabla resume el stack y su justificación:
+La solución se construye con un conjunto de tecnologías gratuitas y de código abierto:
 
 | Capa | Tecnología | Justificación |
 |---|---|---|
-| Multiplataforma | Kotlin Multiplatform + Compose | Un solo código para Android e iOS. |
-| Base de datos local | Room | Operación sin conexión (fuente de verdad). |
-| Backend / nube | Supabase (PostgreSQL + Auth) | Base relacional con seguridad por fila; plan gratuito. |
-| Cliente HTTP | Ktor + kotlinx.serialization | Comunicación con la nube, multiplataforma. |
-| Inyección de dependencias | Koin | Configuración simple del grafo de dependencias. |
-| Mapas | MapLibre + OpenFreeMap | Mapas gratuitos, sin llave de API. |
+| Lenguaje y plataforma | Kotlin · Android (API 24 a 36) | Lenguaje oficial de Android; compatible con teléfonos de gama básica. |
+| Interfaz | Jetpack Compose + Material 3 | Interfaz declarativa, con el tema propio de la app (colores sólidos y una sola fuente). |
+| Navegación | Navigation Compose | Rutas declaradas en un solo NavHost. |
+| Base de datos local | Room (SQLite) | Operación sin conexión; única fuente de verdad. |
+| Inyección de dependencias | Koin | Un único módulo simple para la base de datos, el reloj y el repositorio. |
+| Fechas y horas | kotlinx-datetime | Cálculo del nivel, del agotamiento y del próximo llenado. |
 
 La arquitectura general de la solución se muestra a continuación:
 
@@ -136,30 +143,35 @@ La arquitectura general de la solución se muestra a continuación:
 
 ```mermaid
 flowchart LR
-    subgraph DM["Dispositivo móvil (Android / iOS)"]
-        PRES["Presentación:<br/>Compose + ViewModels"]
-        DOM["Dominio:<br/>casos de uso"]
-        DAT["Datos:<br/>Repositorios"]
-        ROOM[("Room / SQLite<br/>local")]
+    subgraph DM["Teléfono Android"]
+        PRES["Presentación (MVVM):<br/>Screens Compose + ViewModels"]
+        DOM["Dominio (DDD):<br/>modelos y casos de uso"]
+        DAT["Datos:<br/>DepositoRepositoryImpl"]
+        ROOM[("Room / SQLite<br/>aguardapp.db")]
     end
-    OFM["OpenFreeMap<br/>(teselas)"]
-    GI["Google Identity"]
-    SB[("Supabase:<br/>PostgreSQL + Auth + RLS")]
 
     PRES --> DOM
-    DAT --> DOM
+    DAT -. implementa .-> DOM
     DAT --> ROOM
-    PRES -- teselas --> OFM
-    DAT -- OAuth --> GI
-    DAT -- "HTTPS / PostgREST" --> SB
 ```
+
+Las pantallas implementadas y sus rutas de navegación son:
+
+| Ruta | Pantalla | Función |
+|---|---|---|
+| `bienvenida` | Bienvenida | Presenta la app y pide el consentimiento (solo la primera vez). |
+| `configurar_hogar` | Configurar hogar | Formulario del hogar con validaciones y hora del próximo llenado. |
+| `mi_deposito` | Mi depósito | Nivel, "Te alcanza hasta", próximo llenado, déficit y consumo. |
+| `registrar_llenado/{tipo}` | Registrar llenado | Llenado completo (confirmar) o parcial (con litros). |
+| `que_recortar/{deficit}` | Qué recortar | Recomendaciones con casillas y cálculo en vivo. |
+| `me_quede_sin_agua` | Me quedé sin agua | "Se acabó ahora" o "Se acabó antes, a las HH:mm". |
 
 ### 5.3. Metodología de implementación (Documento de VISIÓN, SRS, SAD)
 
-El desarrollo siguió el flujo de trabajo GitHub Flow (rama por funcionalidad, revisión por pares y una rama principal protegida) y una arquitectura limpia en tres capas con MVVM en la presentación. La ingeniería de requisitos y el diseño se documentaron en tres entregables, adjuntos como anexos:
+El desarrollo siguió el flujo de trabajo GitHub Flow (rama por funcionalidad, revisión por pares y una rama principal protegida) y una arquitectura MVVM + DDD. La ingeniería de requisitos y el diseño se documentaron en tres entregables, adjuntos como anexos:
 
-- **Documento de Visión (FD02):** define el posicionamiento, los interesados, las características (MoSCoW) y las restricciones del producto.
-- **Documento SRS (FD03):** especifica los requerimientos funcionales y no funcionales, los procesos y los modelos (casos de uso, clases, secuencia).
+- **Documento de Visión (FD02):** define el posicionamiento, los interesados, las características y las restricciones del producto.
+- **Documento SRS (FD03):** especifica los requerimientos funcionales y no funcionales, las reglas de negocio, los procesos y los modelos (casos de uso, clases y secuencia).
 - **Documento SAD (FD04):** describe la arquitectura mediante el modelo de vistas 4+1 (lógica, implementación, procesos y despliegue).
 
 ```mermaid
@@ -167,7 +179,15 @@ flowchart LR
     FD01["FD01<br/>Factibilidad"] --> FD02["FD02<br/>Visión"] --> FD03["FD03<br/>SRS"] --> FD04["FD04<br/>SAD"] --> DEV["Desarrollo<br/>(GitHub Flow)"] --> FD05["FD05<br/>Informe Final"]
 ```
 
-Al cierre del proyecto se cuenta con un producto mínimo viable operativo: la vertical de sector completa (registro de domicilio, mi sector, puntos de cisterna y estado sin horario), la gestión de la reserva, la operación sin conexión con Room y la sincronización real con Supabase con seguridad por fila.
+Durante la implementación se tomaron estas decisiones:
+
+1. **Migración a Android nativo:** el código de AguaTacna (Kotlin Multiplatform) se trasladó a un único módulo Android (`app`), reemplazando las piezas multiplataforma por sus equivalentes de Android.
+2. **Reducción del alcance:** se eliminaron los módulos de sector, recibo, retos y asistente, junto con sus librerías (mapas, OCR, cámara y permisos).
+3. **Solo datos locales:** se eliminaron la sincronización con Supabase, el inicio de sesión con Google y las notificaciones; la aplicación ya no necesita internet ni permisos.
+4. **Simplificación de la arquitectura:** cada pantalla quedó con un Screen y un ViewModel; los modelos y casos de uso del dominio se agruparon por tema; la inyección de dependencias se concentró en un único módulo.
+5. **Diseño:** colores sólidos sin degradados ni sombras, y una sola fuente tipográfica en toda la app.
+
+Al cierre de esta versión se cuenta con una aplicación funcional que permite configurar el hogar, registrar llenados, consultar el depósito y el déficit, ver qué recortar y declarar que se quedó sin agua, todo sin conexión.
 
 ## 6. Cronograma
 
@@ -182,10 +202,10 @@ Cronograma del Proyecto AguardApp (agosto – diciembre 2026). Comienzo: mar 25/
 | 5 | Documento SRS (FD03) | 10 días | lun 14/09/26 | vie 25/09/26 | 3 | Equipo Diseño |
 | 6 | Documento SAD (FD04) | 10 días | lun 28/09/26 | vie 09/10/26 | 5 | Equipo Diseño |
 | 7 | **3. Desarrollo** | **35 días** | **mar 15/09/26** | **lun 02/11/26** | | |
-| 8 | Core y Reserva | 21 días | mar 15/09/26 | mar 13/10/26 | | Equipo Desarrollo |
-| 9 | Sector y Mapas | 21 días | mar 15/09/26 | mar 13/10/26 | | Equipo Desarrollo |
-| 10 | Recibo y Retos | 21 días | mar 22/09/26 | mar 20/10/26 | | Equipo Desarrollo |
-| 11 | Integración y nube (Supabase) | 14 días | mié 14/10/26 | lun 02/11/26 | 8 | Equipo Backend |
+| 8 | Dominio y datos del Depósito | 21 días | mar 15/09/26 | mar 13/10/26 | | Equipo Desarrollo |
+| 9 | Pantallas y navegación | 21 días | mar 15/09/26 | mar 13/10/26 | | Equipo Desarrollo |
+| 10 | Migración a Android nativo y simplificación | 21 días | mar 22/09/26 | mar 20/10/26 | | Equipo Desarrollo |
+| 11 | Integración con la base local (Room) | 14 días | mié 14/10/26 | lun 02/11/26 | 8 | Equipo Desarrollo |
 | 12 | **4. Cierre** | **24 días** | **mar 03/11/26** | **jue 26/11/26** | | |
 | 13 | Pruebas y piloto | 10 días | mar 03/11/26 | lun 16/11/26 | 11 | Equipo QA |
 | 14 | Informe Final (FD05) | 7 días | mar 17/11/26 | mié 25/11/26 | 13 | Equipo Dirección |
@@ -207,10 +227,10 @@ gantt
     Documento SAD (FD04)             :t6, after t5, 10d
 
     section 3. Desarrollo
-    Core y Reserva                   :t8, 2026-09-15, 21d
-    Sector y Mapas                   :t9, 2026-09-15, 21d
-    Recibo y Retos                   :t10, 2026-09-22, 21d
-    Integración y nube (Supabase)    :t11, 2026-10-14, 14d
+    Dominio y datos del Depósito     :t8, 2026-09-15, 21d
+    Pantallas y navegación           :t9, 2026-09-15, 21d
+    Migración a Android nativo       :t10, 2026-09-22, 21d
+    Integración con Room             :t11, 2026-10-14, 14d
 
     section 4. Cierre
     Pruebas y piloto                 :t13, 2026-11-03, 10d
@@ -220,14 +240,14 @@ gantt
 
 ## 7. Presupuesto
 
-El presupuesto del proyecto, detallado en el Informe de Factibilidad, se resume a continuación. El costo principal corresponde al recurso humano, dado que las herramientas empleadas son gratuitas.
+El presupuesto del proyecto, detallado en el Informe de Factibilidad, se resume a continuación. El costo principal corresponde al recurso humano, dado que las herramientas empleadas son gratuitas y la aplicación no usa servicios en la nube.
 
 | Categoría | Total (S/) |
 |---|---:|
 | Costos de personal (4 desarrolladores x 4 meses) | 16,000.00 |
 | Costos generales (útiles, impresiones, equipo de pruebas) | 850.00 |
 | Costos operativos durante el desarrollo (internet, energía) | 800.00 |
-| Costos del ambiente (dominio; nube y mapas gratuitos) | 70.00 |
+| Costos del ambiente (dominio) | 70.00 |
 | **Inversión total del proyecto** | **17,720.00** |
 
 ```mermaid
@@ -241,22 +261,24 @@ pie showData
 
 ## 8. Conclusión
 
-- AguardApp responde a una necesidad real de la ciudad de Tacna: gestionar la reserva domiciliaria de agua y anticipar los cortes durante el racionamiento.
+- AguardApp responde a una necesidad real de la ciudad de Tacna: saber cuánta agua le queda al hogar y hasta cuándo le alcanza durante el racionamiento.
 - El proyecto es viable y factible en las dimensiones técnica, económica, operativa, social, legal y ambiental, con indicadores financieros que respaldan la inversión (VAN positivo, TIR del 22.2 % y B/C de 1.14).
-- La arquitectura limpia, multiplataforma y offline-first, documentada en los entregables FD01 a FD04, permitió construir un producto mínimo viable operativo dentro del plazo previsto.
-- El modelo colaborativo y la privacidad por diseño (seguridad por fila, almacenamiento a nivel de sector) distinguen a la solución y la alinean con la Ley N.° 29733.
+- Concentrar el producto en el módulo Depósito, con una aplicación Android nativa y datos locales, simplificó la arquitectura y eliminó la dependencia de servidores, cuentas y permisos.
+- La arquitectura MVVM + DDD, documentada en los entregables FD03 y FD04, separa el dominio de Android y deja cada pantalla con un Screen y un ViewModel, lo que facilita el mantenimiento.
+- La privacidad por diseño —ningún dato sale del teléfono— alinea la solución con la Ley N.° 29733.
 
 ## Recomendaciones
 
-- Formalizar la gestión de información con EPS Tacna y la Sunass para incorporar la sectorización y los cronogramas oficiales.
-- Realizar un piloto con 20 a 30 hogares para validar el modelo colaborativo y medir los indicadores de impacto.
-- Completar las capacidades de plataforma pendientes (ubicación por GPS y notificaciones push) y la paridad en iOS.
-- Mantener las pruebas en dispositivos físicos y la cobertura de la capa de dominio por encima del 70 %.
+- Realizar un piloto con 20 a 30 hogares para validar la estimación del consumo y ajustar sus parámetros.
+- Agregar pruebas unitarias para la capa de dominio (estimación del consumo, déficit y recortes), que es Kotlin puro.
+- Evaluar en próximas versiones la reincorporación de funciones fuera del alcance actual (avisos, sector y cronograma oficial, sincronización opcional), sin perder el funcionamiento sin conexión.
+- Mantener las pruebas en dispositivos físicos de gama básica.
 
 ## Bibliografía
 
 - Congreso de la República del Perú. (2011). *Ley N.° 29733 – Ley de Protección de Datos Personales*. Lima, Perú.
 - Kruchten, P. (1995). Architectural Blueprints — The 4+1 View Model of Software Architecture. *IEEE Software, 12*(6), 42–50.
+- Evans, E. (2003). *Domain-Driven Design: Tackling Complexity in the Heart of Software*. Addison-Wesley.
 - Sommerville, I. (2016). *Ingeniería de Software* (10.ª ed.). Pearson Educación.
 - Pressman, R. S. (2014). *Ingeniería del Software: Un Enfoque Práctico* (8.ª ed.). McGraw-Hill.
 - ISO/IEC. (2011). *ISO/IEC 25010:2011 – Systems and software engineering – SQuaRE*.

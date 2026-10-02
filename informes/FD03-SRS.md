@@ -2,8 +2,8 @@
 
 > **Universidad Privada de Tacna** · Facultad de Ingeniería · Escuela Profesional de Ingeniería de Sistemas
 > **Curso:** Soluciones Móviles I · **Docente:** Mag. Alberto Johnatan Flor Rodríguez
-> **Sistema:** AguardApp: sistema móvil para la gestión de la reserva domiciliaria de agua y la anticipación de cortes durante el racionamiento hídrico en Tacna
-> **Versión:** 1.0 · Tacna – Perú, 2026
+> **Sistema:** AguardApp: sistema móvil para la gestión del depósito domiciliario de agua durante el racionamiento hídrico en Tacna
+> **Versión:** 2.0 · Tacna – Perú, 2026
 
 **Integrantes**
 
@@ -19,6 +19,7 @@
 | Versión | Hecha por | Revisada por | Aprobada por | Fecha | Motivo |
 |---|---|---|---|---|---|
 | 1.0 | DJ - JL - CM - IS | AFR | AFR | 30/09/2026 | Versión Original |
+| 2.0 | DJ - JL - CM - IS | — | — | 02/10/2026 | Actualización al sistema AguardApp: aplicación Android nativa centrada en el módulo Depósito, con base de datos local |
 
 ## Índice
 
@@ -38,7 +39,7 @@
 
 ### 1.1. Nombre de la Empresa
 
-AguardApp: sistema móvil para la gestión de la reserva domiciliaria de agua y la anticipación de cortes durante el racionamiento hídrico en Tacna.
+AguardApp: sistema móvil para la gestión del depósito domiciliario de agua durante el racionamiento hídrico en Tacna.
 
 ### 1.2. Visión
 
@@ -46,53 +47,51 @@ Ser un referente en el desarrollo de soluciones móviles con impacto social en l
 
 ### 1.3. Misión
 
-Desarrollar aplicaciones móviles multiplataforma, accesibles y de calidad, que mejoren la vida de los ciudadanos; para este proyecto, ayudando a los hogares de Tacna a gestionar su reserva de agua durante el racionamiento.
+Desarrollar aplicaciones móviles accesibles y de calidad que mejoren la vida de los ciudadanos; para este proyecto, ayudando a los hogares de Tacna a saber cuánta agua les queda en su depósito y hasta cuándo les alcanza durante el racionamiento.
 
 ### 1.4. Organigrama
 
 ```mermaid
 flowchart TB
-    JP["Jefe de Proyecto:<br/>Cristhian Mamani<br/>(Core y Reserva)"]
-    SM["Sector y Mapas:<br/>Dayan Jahuira"]
-    RI["Recibo e IA /<br/>Líder de Pruebas:<br/>Iker Sierra"]
-    RR["Retos, Reportes<br/>y Despliegue:<br/>Jimmy Llica"]
-    JP --> SM
-    JP --> RI
-    JP --> RR
+    JP["Jefe de Proyecto:<br/>Cristhian Mamani"]
+    D1["Desarrollo:<br/>Dayan Jahuira"]
+    D2["Desarrollo /<br/>Líder de Pruebas:<br/>Iker Sierra"]
+    D3["Desarrollo<br/>y Despliegue:<br/>Jimmy Llica"]
+    JP --> D1
+    JP --> D2
+    JP --> D3
 ```
 
 ## 2. Visionamiento de la Empresa
 
 ### 2.1. Descripción del Problema
 
-La ciudad de Tacna se abastece de agua potable bajo un esquema de racionamiento por sectores, con servicio solo durante algunas horas al día. Los hogares no cuentan con información clara y oportuna sobre cuándo llegará el agua a su sector ni sobre cuánta reserva les queda, lo que ocasiona desabastecimiento imprevisto, compra de agua de emergencia a sobreprecio y desperdicio del recurso. La información oficial es dispersa y poco confiable, lo que agrava la mala planificación del consumo.
+La ciudad de Tacna se abastece de agua potable bajo un esquema de racionamiento, con servicio solo durante algunas horas al día. Los hogares almacenan agua en tanques elevados, cisternas o bidones, pero no saben cuánta agua les queda ni hasta qué hora les alcanzará. Por eso se quedan sin agua de forma imprevista, compran agua de emergencia a sobreprecio y no ajustan su consumo a tiempo.
 
 ### 2.2. Objetivos de Negocios
 
-- Reducir la incertidumbre de los hogares sobre el abastecimiento de agua durante el racionamiento.
-- Disminuir los gastos por compra de agua de emergencia mediante una mejor planificación de la reserva.
-- Fomentar el ahorro y el consumo responsable del agua en la ciudad de Tacna.
+- Reducir la incertidumbre de los hogares sobre cuánta agua les queda en su depósito.
+- Disminuir los gastos por compra de agua de emergencia anticipando cuándo se acabará el agua.
+- Fomentar el ahorro con recomendaciones concretas cuando el agua no alcanza hasta el próximo llenado.
 
 ### 2.3. Objetivos de Diseño
 
-- Construir una aplicación multiplataforma (Android e iOS) con Kotlin Multiplatform y Compose.
-- Garantizar la operación sin conexión con una base de datos local como fuente de verdad.
-- Aplicar una arquitectura limpia en capas, con el dominio independiente de frameworks.
-- Asegurar la privacidad de los datos del usuario mediante seguridad por fila y almacenamiento a nivel de sector.
+- Construir una aplicación Android nativa con Kotlin y Jetpack Compose.
+- Garantizar el funcionamiento 100 % sin conexión, con una base de datos local (Room / SQLite) como única fuente de verdad.
+- Aplicar el patrón MVVM en la presentación y una organización por dominio (DDD), con el dominio independiente de Android.
+- Proteger la privacidad: todos los datos quedan en el teléfono y la aplicación no solicita permisos del sistema.
 
 ### 2.4. Alcance del proyecto
 
-El sistema comprende la gestión de la reserva domiciliaria de agua, la configuración del perfil del hogar, la consulta del sector y su cronograma de abastecimiento, la ubicación de cisternas cercanas, la confirmación colaborativa de horarios, la digitalización de recibos de EPS Tacna, la consulta del historial de consumo, la generación de recomendaciones de ahorro, los retos semanales, los reportes ciudadanos, los avisos de agotamiento y el asistente hídrico.
+El sistema comprende la configuración del hogar (tipo y capacidad del depósito, habitantes, hábitos de consumo y hora habitual de llegada del agua), el registro de llenados completos o parciales, el cálculo del nivel actual del depósito, la proyección de la hora de agotamiento, el cálculo del déficit de litros hasta el próximo llenado, las recomendaciones de recorte de consumo y la declaración de "me quedé sin agua", con la que la aplicación aprende el consumo real del hogar.
 
-La aplicación utiliza Kotlin Multiplatform y Compose Multiplatform para compartir la lógica de negocio y una parte importante de la interfaz entre Android e iOS. La versión Android incluye reconocimiento de texto mediante ML Kit, notificaciones locales, tareas periódicas con WorkManager e inicio de sesión con Google. La versión iOS comparte el dominio y la interfaz multiplataforma, pero sus integraciones específicas todavía deben ser compiladas y verificadas.
+La aplicación es nativa para Android y se desarrolla con Kotlin, Jetpack Compose, Room, Koin y Navigation Compose. Todos los datos se guardan en una base de datos SQLite local; la aplicación no necesita internet ni cuentas de usuario.
 
-El sistema funciona sin conexión para la consulta y modificación de la información almacenada localmente. Las operaciones que requieren servicios externos, como la sincronización con Supabase, el inicio de sesión con Google, el asistente hídrico remoto y la actualización de información desde la nube, necesitan conexión a internet.
-
-Quedan fuera del alcance el panel administrativo web para EPS Tacna, la integración directa con los sistemas internos de la empresa, la administración institucional de los cronogramas y la garantía de paridad completa entre Android e iOS durante la versión actual del proyecto.
+Quedan fuera del alcance de esta versión: la consulta del sector y del cronograma oficial, el mapa de cisternas, la confirmación colaborativa de horarios, la digitalización de recibos, los retos y reportes ciudadanos, el asistente hídrico, la sincronización en la nube, el inicio de sesión con Google, las notificaciones y la versión para iOS.
 
 ### 2.5. Viabilidad del Sistema
 
-Según el Informe de Factibilidad (FD01, Versión 1.0), el proyecto es viable en las dimensiones técnica (equipo competente y tecnologías gratuitas con un MVP operativo), económica (inversión estimada de S/ 17,720.00 con VAN positivo y TIR del 22.2 %), operativa, legal (Ley N.° 29733), social y ambiental.
+Según el Informe de Factibilidad (FD01, Versión 1.0), el proyecto es viable en las dimensiones técnica, económica (inversión estimada de S/ 17,720.00 con VAN positivo y TIR del 22.2 %), operativa, legal (Ley N.° 29733), social y ambiental. La reducción del alcance a una aplicación local refuerza la viabilidad técnica y legal: no hay costos de servidor ni datos personales fuera del dispositivo.
 
 ### 2.6. Información obtenida del Levantamiento de Información
 
@@ -104,25 +103,22 @@ A partir de la observación del comportamiento de los hogares durante el raciona
 
 ### a) Diagrama del Proceso Actual – Diagrama de actividades
 
-Actualmente, el vecino depende de rumores sobre el horario del agua, llena recipientes de golpe cuando llega y usa el agua sin controlar su reserva, lo que lo lleva a quedarse sin agua y comprarla de emergencia.
+Actualmente, el vecino llena su depósito cuando llega el agua y la usa sin saber cuánto le queda, lo que lo lleva a quedarse sin agua y comprarla de emergencia.
 
 ```mermaid
 flowchart TD
-    A([Inicio]) --> B["El vecino escucha rumores<br/>del horario del agua"]
-    B --> C{"¿Llegó el agua?"}
-    C -- No --> D["Espera sin saber<br/>cuándo llegará"]
-    D --> C
-    C -- Sí --> E["Llena tanques y<br/>recipientes de golpe"]
-    E --> F["Usa el agua sin<br/>controlar la reserva"]
-    F --> G{"¿Se quedó sin agua?"}
-    G -- Sí --> H["Compra agua de<br/>emergencia a sobreprecio"]
-    G -- No --> Z([Fin])
-    H --> Z
+    A([Inicio]) --> B["Llega el agua"]
+    B --> C["Llena tanques y<br/>recipientes de golpe"]
+    C --> D["Usa el agua sin<br/>controlar el depósito"]
+    D --> E{"¿Se quedó sin agua<br/>antes del próximo llenado?"}
+    E -- Sí --> F["Compra agua de<br/>emergencia a sobreprecio"]
+    E -- No --> Z([Fin])
+    F --> Z
 ```
 
 ### b) Diagrama del Proceso Propuesto – Diagrama de actividades Inicial
 
-Con AguardApp, el vecino consulta su sector y cronograma, conoce su reserva y el próximo abastecimiento, confirma la llegada del agua, registra el llenado y recibe recomendaciones de ahorro y la ubicación de cisternas cercanas.
+Con AguardApp, el vecino configura su hogar una vez, registra cada llenado con un toque y consulta en todo momento cuánta agua le queda, hasta cuándo le alcanza y cuántos litros le faltarán antes del próximo llenado.
 
 ```mermaid
 ---
@@ -130,38 +126,28 @@ title: Proceso propuesto con AguardApp
 ---
 flowchart TD
     S((●)) --> A1["Abrir AguardApp"]
-    A1 --> D1{"¿Existe un perfil<br/>del hogar?"}
-    D1 -- No --> A2["Configurar tipo de reservorio"]
-    A2 --> A3["Registrar capacidad, habitantes<br/>y hábitos de consumo"]
-    A3 --> M1(( ))
+    A1 --> D0{"¿Primera vez?"}
+    D0 -- Sí --> A0["Aceptar el uso de datos<br/>en el teléfono (Bienvenida)"]
+    A0 --> D1
+    D0 -- No --> D1{"¿El hogar está<br/>configurado?"}
+    D1 -- No --> A2["Configurar el hogar: tipo y capacidad,<br/>habitantes, hábitos y hora de llegada del agua"]
+    A2 --> M1(( ))
     D1 -- Sí --> M1
-    M1 --> A4["Consultar sector y cronograma"]
-    A4 --> A5["Mostrar próximo abastecimiento"]
-    A5 --> D2{"¿El agua llegó?"}
-    D2 -- Sí --> A6["Confirmar llegada del agua"]
-    A6 --> A7["Registrar llenado completo<br/>o a la mitad"]
-    D2 -- No --> A8["Registrar que el agua no llegó"]
-    A7 --> M2(( ))
-    A8 --> M2
-    M2 --> A9["Calcular nivel actual de la reserva"]
-    A9 --> A10["Proyectar hora de agotamiento"]
-    A10 --> D3{"¿Existe cronograma<br/>futuro?"}
-    D3 -- Sí --> A11["Calcular déficit frente al<br/>próximo abastecimiento"]
-    D3 -- No --> A12["Mostrar nivel y agotamiento<br/>sin calcular déficit"]
-    A11 --> D4{"¿La reserva alcanza?"}
-    D4 -- No --> A13["Emitir aviso de agotamiento"]
-    A13 --> A14["Mostrar recomendaciones de ahorro"]
-    A14 --> D5{"¿El hogar necesita<br/>abastecimiento alternativo?"}
-    D5 -- Sí --> A15["Consultar cisternas cercanas"]
-    D5 -- No --> M3(( ))
-    A15 --> M3
-    D4 -- Sí --> A16["Mostrar estado de reserva suficiente"]
-    M3 --> M4(( ))
-    A16 --> M4
-    M4 --> M5(( ))
-    A12 --> M5
-    M5 --> A17["Consultar recibos, retos,<br/>reportes o asistente hídrico"]
-    A17 --> E((◉))
+    M1 --> D2{"¿Llegó el agua?"}
+    D2 -- Sí --> A3["Registrar llenado<br/>completo o parcial"]
+    A3 --> M2(( ))
+    D2 -- No --> M2
+    M2 --> A4["Calcular el nivel actual"]
+    A4 --> A5["Proyectar hasta cuándo alcanza"]
+    A5 --> A6["Calcular el déficit hasta<br/>el próximo llenado"]
+    A6 --> D3{"¿Hay déficit?"}
+    D3 -- Sí --> A7["Consultar qué recortar<br/>y marcar recomendaciones"]
+    D3 -- No --> M3(( ))
+    A7 --> M3
+    M3 --> D4{"¿Se acabó el agua<br/>antes de lo previsto?"}
+    D4 -- Sí --> A8["Declarar 'me quedé sin agua'<br/>y ajustar el consumo"]
+    D4 -- No --> E((◉))
+    A8 --> E
 ```
 
 ## 4. Especificación de Requerimientos de Software
@@ -170,63 +156,56 @@ flowchart TD
 
 | ID | Requerimiento | Descripción | Prioridad |
 |---|---|---|---|
-| RF-01 | Registrar domicilio | Marcar la ubicación del domicilio por GPS o en el mapa y asociarla a un sector. | Alta |
-| RF-02 | Consultar sector | Mostrar el sector, el distrito y la continuidad del servicio del domicilio. | Alta |
-| RF-03 | Consultar cronograma | Mostrar el horario del día y el próximo abastecimiento, o informar si el sector aún no tiene horario. | Alta |
-| RF-04 | Configurar perfil del hogar | Registrar el tipo y la capacidad del reservorio, los habitantes y los hábitos de consumo. | Alta |
-| RF-05 | Registrar llenado | Registrar el momento en que se llenó la reserva del hogar. | Alta |
-| RF-06 | Calcular reserva y agotamiento | Estimar los litros disponibles y calcular hasta cuándo alcanza la reserva y el déficit frente al próximo abastecimiento. | Alta |
-| RF-07 | Recomendar recortes | Sugerir recortes de consumo cuando la reserva no alcanza hasta el próximo abastecimiento. | Media |
-| RF-08 | Ver cisternas cercanas | Mostrar en un mapa los puntos de cisterna cercanos, ordenados por distancia y con su estado. | Alta |
-| RF-09 | Confirmar llegada o corte | Permitir a los vecinos confirmar la llegada o el corte del agua en su sector. | Alta |
-| RF-10 | Estimar horario colaborativo | Calcular el horario del sector con la mediana de las confirmaciones de los vecinos. | Media |
-| RF-11 | Operar sin conexión y sincronizar | Funcionar con datos locales y sincronizarlos con la nube al recuperar la conexión, con inicio de sesión opcional con Google. | Alta |
+| RF-01 | Mostrar bienvenida | Presentar la aplicación la primera vez y pedir el consentimiento para guardar los datos del hogar en el teléfono. | Alta |
+| RF-02 | Configurar el hogar | Registrar el tipo de depósito, su capacidad, los habitantes, los hábitos de consumo y la hora habitual de llegada del agua. | Alta |
+| RF-03 | Registrar llenado | Registrar un llenado completo (la capacidad del depósito) o parcial (los litros indicados por el usuario). | Alta |
+| RF-04 | Consultar el depósito | Mostrar el nivel actual, el porcentaje, el último llenado, hasta cuándo alcanza el agua y el consumo estimado. | Alta |
+| RF-05 | Calcular el déficit | Calcular los litros que faltarán antes del próximo llenado. | Alta |
+| RF-06 | Recomendar recortes | Mostrar recomendaciones de ahorro según los hábitos del hogar y recalcular en vivo los litros ganados y los que faltan. | Media |
+| RF-07 | Declarar que se quedó sin agua | Registrar que el agua se acabó ahora o a una hora anterior y ajustar el consumo estimado del hogar. | Media |
+| RF-08 | Operar sin conexión | Funcionar sin internet, guardando toda la información en el teléfono. | Alta |
 
 ### b) Cuadro de Requerimientos No funcionales
 
 | ID | Requerimiento | Descripción |
 |---|---|---|
-| RNF-01 | Disponibilidad | La aplicación opera al 100 % sin conexión, con la base local como fuente de verdad, y sincroniza en menos de 5 segundos al recuperar la red. |
-| RNF-02 | Rendimiento | Las pantallas que consulten información local deben responder en un tiempo máximo de 2 segundos bajo condiciones normales. La sincronización debe iniciarse al recuperar la conexión, aunque su duración dependerá de la red y del servicio remoto. |
-| RNF-03 | Seguridad | La comunicación con servicios externos debe utilizar HTTPS/TLS. Los datos almacenados en Supabase deben protegerse mediante políticas de seguridad por fila y asociarse a una identidad autorizada. |
-| RNF-04 | Privacidad | La ubicación exacta del domicilio debe procesarse localmente. En la nube debe almacenarse el sector asociado y no la coordenada exacta del domicilio. Las fotografías de reportes solo deben utilizarse con autorización del usuario. |
-| RNF-05 | Usabilidad y accesibilidad | La interfaz debe utilizar textos legibles, iconos acompañados de descripciones, controles de tamaño adecuado, mensajes comprensibles y flujos simples para usuarios con distintos niveles de experiencia tecnológica. |
-| RNF-06 | Portabilidad | La lógica de negocio y las interfaces compartidas deben desarrollarse con Kotlin Multiplatform y Compose Multiplatform. Las funciones específicas de cada plataforma deben documentarse y probarse por separado. |
-| RNF-07 | Compatibilidad | La versión Android debe ser compatible con Android 8.0 o superior. La compatibilidad con iOS dependerá de la compilación y verificación de las integraciones específicas de dicha plataforma. |
-| RNF-08 | Mantenibilidad y pruebas | El sistema debe aplicar arquitectura limpia, mantener el dominio independiente de frameworks, limitar preferentemente los archivos a 150 líneas y alcanzar como mínimo 70 % de cobertura en la lógica de dominio. |
+| RNF-01 | Disponibilidad | La aplicación opera al 100 % sin conexión, con la base de datos local (Room / SQLite) como única fuente de verdad. |
+| RNF-02 | Rendimiento | Las pantallas deben responder en un máximo de 2 segundos en condiciones normales; los cálculos se hacen en el dispositivo sin esperar a la red. |
+| RNF-03 | Privacidad y seguridad | Ningún dato sale del teléfono. La aplicación no solicita permisos del sistema (ni internet, ni ubicación, ni cámara, ni notificaciones). El usuario se identifica con un UUID local. |
+| RNF-04 | Usabilidad y accesibilidad | Interfaz con textos legibles, una sola fuente tipográfica, colores sólidos, botones a lo ancho de la pantalla y mensajes de error claros debajo de cada campo. |
+| RNF-05 | Compatibilidad | Android 7.0 (API 24) o superior; probado contra la API 36. |
+| RNF-06 | Mantenibilidad | Arquitectura MVVM + DDD: dominio en Kotlin puro, independiente de Android; cada pantalla con un Screen y un ViewModel; sin capas innecesarias. |
+| RNF-07 | Exactitud del cálculo | La estimación del consumo debe usar el historial real del hogar cuando haya datos suficientes y limitar los cambios bruscos ante un error del usuario. |
 
 ### c) Cuadro de Requerimientos funcionales Final
 
-Tras el análisis, se incorporaron requerimientos adicionales al listado inicial:
+Tras el análisis se mantuvieron los requerimientos iniciales y se precisaron sus validaciones:
 
 | ID | Requerimiento | Descripción | Prioridad |
 |---|---|---|---|
-| RF-01 | Registrar domicilio | Marcar la ubicación del domicilio por GPS o en el mapa y asociarla a un sector. | Alta |
-| RF-02 | Consultar sector | Mostrar el sector, el distrito y la continuidad del servicio del domicilio. | Alta |
-| RF-03 | Consultar cronograma | Mostrar el horario del día y el próximo abastecimiento, o informar si el sector aún no tiene horario. | Alta |
-| RF-04 | Configurar perfil del hogar | Registrar el tipo y la capacidad del reservorio, los habitantes y los hábitos de consumo. | Alta |
-| RF-05 | Registrar llenado | Registrar el momento en que se llenó la reserva del hogar. | Alta |
-| RF-06 | Calcular reserva y agotamiento | Estimar los litros disponibles y calcular hasta cuándo alcanza la reserva y el déficit frente al próximo abastecimiento. | Alta |
-| RF-07 | Recomendar recortes | Sugerir recortes de consumo cuando la reserva no alcanza hasta el próximo abastecimiento. | Media |
-| RF-08 | Ver cisternas cercanas | Mostrar en un mapa los puntos de cisterna cercanos, ordenados por distancia y con su estado. | Alta |
-| RF-09 | Confirmar llegada o corte | Permitir a los vecinos confirmar la llegada o el corte del agua en su sector. | Alta |
-| RF-10 | Estimar horario colaborativo | Calcular el horario del sector con la mediana de las confirmaciones de los vecinos. | Media |
-| RF-11 | Operar sin conexión y sincronizar | Funcionar con datos locales y sincronizarlos con la nube al recuperar la conexión, con inicio de sesión opcional con Google. | Alta |
-| RF-12 | Emitir alertas | Avisar antes del corte del servicio y antes del agotamiento de la reserva. | Media |
-| RF-13 | Digitalizar recibo | Capturar mediante la cámara un recibo de EPS Tacna, extraer sus datos mediante reconocimiento de texto, permitir su revisión y corrección manual, almacenarlo localmente y mostrar el historial de consumo del hogar. | Media |
-| RF-14 | Retos de ahorro | Proponer retos semanales de ahorro y llevar la racha del usuario. | Baja |
-| RF-15 | Reportar incidencias | Registrar reportes ciudadanos de fugas o falta de agua, con foto y ubicación. | Baja |
+| RF-01 | Mostrar bienvenida | Se muestra solo la primera vez; sin aceptar el consentimiento no se puede empezar. | Alta |
+| RF-02 | Configurar el hogar | Capacidad entre 200 y 5000 L; habitantes entre 1 y 12; hábitos (duchas por día, lavadora, riego) y hora del próximo llenado obligatoria. El botón Guardar se deshabilita mientras haya errores. Se usa al inicio y para editar desde Mi depósito. | Alta |
+| RF-03 | Registrar llenado | Completo: se registran los litros de la capacidad. Parcial: los litros deben ser mayores que 0 y no superar la capacidad. No se pueden registrar llenados en el futuro. | Alta |
+| RF-04 | Consultar el depósito | Nivel actual en litros y porcentaje, último llenado, "Te alcanza hasta", próximo llenado, consumo en L/h y promedio en L/persona/día. Se actualiza solo cada minuto. | Alta |
+| RF-05 | Calcular el déficit | Déficit = consumo por hora × horas hasta el próximo llenado − nivel actual (nunca negativo). | Alta |
+| RF-06 | Recomendar recortes | Solo se sugieren las acciones que corresponden a los hábitos del hogar; se muestra "Ganas X L" y "Te faltan Y L" o "¡Cubriste el déficit!". | Media |
+| RF-07 | Declarar que se quedó sin agua | Opciones "Se acabó ahora" o "Se acabó antes, a las HH:mm". La hora debe tener formato válido, no ser futura y ser posterior al último llenado. Antes de registrar se muestra lo proyectado frente a lo ocurrido. | Media |
+| RF-08 | Operar sin conexión | Todas las funciones trabajan con la base local. | Alta |
 
 ### d) Reglas de Negocio
 
 | ID | Regla de negocio |
 |---|---|
-| RN-01 | El inicio de la ventana de abastecimiento cuenta como abastecido; la hora de fin ya no. |
-| RN-02 | El horario colaborativo requiere al menos 3 confirmaciones de llegada y 3 de corte por sector y fecha. |
-| RN-03 | El horario del sector se estima con la mediana de las confirmaciones, para resistir reportes erróneos. |
-| RN-04 | El sector del domicilio es aquel cuyo centro está más cerca de la ubicación del usuario. |
-| RN-05 | En el servidor solo se almacena el sector del usuario, nunca la coordenada exacta del domicilio. |
-| RN-06 | La aplicación funciona en modo invitado; la autenticación es opcional. |
+| RN-01 | El agua llega todos los días a la hora configurada: el próximo llenado es hoy a esa hora si aún no pasó, o mañana si ya pasó. |
+| RN-02 | El nivel del depósito baja de forma lineal desde el último llenado según el consumo por hora; nunca es menor que cero ni mayor que la capacidad. |
+| RN-03 | El consumo se estima en este orden: (1) con el historial del hogar si hay datos suficientes, (2) con los hábitos declarados y (3) si no hay nada, suponiendo que el depósito dura 48 horas. |
+| RN-04 | El historial alcanza para estimar con al menos un intervalo "observado" (terminó con "me quedé sin agua") o con dos intervalos entre llenados. Se usan los 5 más recientes y se toma la mediana. |
+| RN-05 | Dos llenados separados por menos de 6 horas se consideran un relleno y no cuentan para el consumo; un intervalo de más del doble de la mediana se descarta como un llenado olvidado. |
+| RN-06 | El consumo por hábitos se calcula con 60 L por persona al día más 30 L por ducha, 100 L si usa lavadora y 150 L si riega el jardín, repartidos en 12 horas de uso al día. |
+| RN-07 | Al declarar que se quedó sin agua, el nuevo consumo no puede variar más de un 30 % respecto del anterior en una sola declaración. |
+| RN-08 | Al registrar un llenado se descarta el consumo aprendido y se vuelve a estimar con todo el historial. |
+| RN-09 | Las recomendaciones de recorte son: no lavar ropa hoy (80 L, si usa lavadora), no regar el jardín (80 L, si riega), duchas de 5 minutos (40 L, si se ducha), cerrar el caño al lavar platos (45 L) y usar un balde en el inodoro (30 L). |
+| RN-10 | El usuario se identifica con un UUID local que se crea una sola vez y no cambia. |
 
 ## 5. Fase de Desarrollo
 
@@ -234,9 +213,9 @@ Tras el análisis, se incorporaron requerimientos adicionales al listado inicial
 
 | Perfil | Descripción | Permisos principales |
 |---|---|---|
-| Jefe de hogar | Administra la reserva y consulta el sector | Registrar llenados, consultar reserva, sector y cisternas |
-| Vecino colaborador | Reporta la llegada y el corte del agua | Confirmar llegada/corte del agua del sector |
-| Usuario invitado | Consulta sin autenticarse | Consultar sector, cronograma y cisternas |
+| Jefe de hogar | Persona que administra el agua de la casa | Configurar el hogar, registrar llenados, consultar el depósito y el déficit, ver qué recortar y declarar que se quedó sin agua |
+
+> La aplicación tiene un único perfil: no hay cuentas ni roles, y cada teléfono guarda los datos de un hogar.
 
 ### 5.2. Modelo Conceptual
 
@@ -247,45 +226,30 @@ Tras el análisis, se incorporaron requerimientos adicionales al listado inicial
 title: Diagrama de paquetes de AguardApp
 ---
 flowchart LR
-    subgraph NC["📦 Núcleo común"]
+    subgraph CORE["📦 core"]
         direction TB
-        NC1["Sesión"]
-        NC2["Navegación"]
-        NC3["Configuración"]
+        C1["data (usuario local)"]
+        C2["db (Room)"]
+        C3["di (Koin)"]
+        C4["navigation"]
+        C5["ui.theme"]
+        C6["util (reloj, UUID)"]
     end
-    subgraph PR["📦 Presentación"]
+    subgraph BIEN["📦 feature.bienvenida"]
+        B1["presentation"]
+    end
+    subgraph DEP["📦 feature.deposito"]
         direction TB
-        PR1["Reserva"]
-        PR2["Bienvenida"]
-        PR3["Sector"]
-        PR4["Asistente hídrico"]
-        PR5["Ahorro y reportes"]
-        PR6["Recibos"]
+        P1["presentation"]
+        D1["domain"]
+        DA1["data"]
     end
-    subgraph DA["📦 Datos"]
-        direction TB
-        DA1["Sincronización"]
-        DA2["Persistencia local"]
-    end
-    subgraph SE["📦 Servicios externos"]
-        direction TB
-        SE1["Mapas"]
-        SE2["Supabase"]
-        SE3["Asistente remoto"]
-        SE4["Reconocimiento de texto"]
-    end
-    subgraph DO["📦 Dominio"]
-        direction TB
-        DO1["Abastecimiento"]
-        DO2["Gestión de reserva"]
-        DO3["Ahorro"]
-        DO4["Consumo"]
-    end
-    PR -- utiliza --> NC
-    NC -- configura --> DA
-    PR -- utiliza --> DO
-    DA -- se comunica --> SE
-    DA -. implementa .-> DO
+    BIEN -- usa --> CORE
+    P1 -- usa --> D1
+    DA1 -. implementa .-> D1
+    CORE -- crea --> DA1
+    CORE -- navega a --> P1
+    CORE -- navega a --> BIEN
 ```
 
 #### b) Diagrama de Casos de Uso
@@ -296,170 +260,73 @@ title: Casos de uso del sistema AguardApp
 ---
 flowchart LR
     JH(["🧍 Jefe de hogar"])
-    UI(["🧍 Usuario invitado"])
-    VC(["🧍 Vecino colaborador"])
-    SO(["🖥️ Sistema operativo"])
-    GO(["🔑 Google"])
-    N8(["🤖 Servicio n8n"])
 
     subgraph SYS["Sistema AguardApp"]
-        CU06(["CU-06 Declarar que se quedó sin agua"])
-        CU13(["CU-13 Participar en retos de ahorro"])
-        CU07(["CU-07 Consultar recomendaciones de ahorro"])
-        CU09(["CU-09 Recibir y consultar avisos"])
-        CU04(["CU-04 Registrar llenado"])
-        CU15(["CU-15 Acceder como invitado"])
-        CU16(["CU-16 Iniciar sesión con Google"])
-        RD(["Registrar domicilio"])
-        CU01(["CU-01 Consultar sector y cronograma"])
+        CU01(["CU-01 Ver bienvenida y aceptar"])
+        CU02(["CU-02 Configurar el hogar"])
+        CU03(["CU-03 Registrar llenado"])
+        CU04(["CU-04 Consultar mi depósito"])
         CD(["Calcular déficit"])
-        CU05(["CU-05 Consultar reserva y agotamiento"])
-        CR(["Corregir datos del recibo"])
-        CU10(["CU-10 Digitalizar recibo"])
-        CU03(["CU-03 Configurar perfil del hogar"])
-        CU08(["CU-08 Consultar cisternas cercanas"])
-        CU11(["CU-11 Consultar historial de consumo"])
-        CU12(["CU-12 Utilizar asistente hídrico"])
-        CU14(["CU-14 Reportar incidencia"])
-        MI(["Consultar mapa de incidencias"])
-        EH(["Estimar horario colaborativo"])
-        CU02(["CU-02 Confirmar llegada o corte"])
+        EC(["Estimar consumo"])
+        CU05(["CU-05 Consultar qué recortar"])
+        CU06(["CU-06 Declarar que se quedó sin agua"])
     end
 
-    JH -- "hereda de" --> UI
-    VC -- "hereda de" --> UI
+    JH --> CU01 & CU02 & CU03 & CU04 & CU05 & CU06
 
-    JH --> CU06 & CU13 & CU07 & CU09 & CU04
-    UI --> CU15 & CU16 & CU01 & CU05 & CU10 & CU03 & CU08 & CU11 & CU12
-    VC --> CU14 & MI & CU02
-
-    CU01 -. "«include»" .-> RD
-    CU05 -. "«include»" .-> CD
-    CU07 -. "«extend»" .-> CU05
-    CU09 -. "«extend»" .-> CU05
-    CR -. "«extend»" .-> CU10
-    EH -. "«extend»" .-> CU02
-
-    CU09 --> SO
-    CU16 --> GO
-    CU12 --> N8
+    CU04 -. "«include»" .-> CD
+    CU04 -. "«include»" .-> EC
+    CU05 -. "«extend»" .-> CU04
+    CU06 -. "«include»" .-> EC
 ```
-
-> **Nota:** el acceso como invitado (CU-15) crea una identidad local.
 
 #### c) Escenarios de Caso de Uso (narrativa)
 
-| CU-01 | Consultar sector y cronograma |
-|---|---|
-| **Actor** | Jefe de hogar / Usuario invitado |
-| **Precondición** | La aplicación tiene una ubicación de referencia del domicilio. |
-| **Flujo principal** | 1) El usuario abre la pantalla Sector. 2) El sistema resuelve el sector más cercano. 3) Obtiene el cronograma y las cisternas. 4) Calcula el próximo abastecimiento. 5) Muestra la información. |
-| **Postcondición** | El usuario conoce su sector, su cronograma y el próximo horario del agua. |
-
-| CU-02 | Confirmar llegada del agua |
-|---|---|
-| **Actor** | Vecino colaborador |
-| **Precondición** | El usuario está autenticado y pertenece a un sector. |
-| **Flujo principal** | 1) El usuario toca 'Llegó el agua'. 2) El sistema registra la confirmación local. 3) La sube a la nube con seguridad por fila. 4) Recalcula el total de confirmaciones. 5) Muestra un mensaje de agradecimiento. |
-| **Postcondición** | La confirmación queda registrada y contribuye a la estimación del horario del sector. |
-
-| CU-03 | Configurar perfil del hogar |
+| CU-01 | Ver bienvenida y aceptar |
 |---|---|
 | **Actor** | Jefe de hogar |
-| **Precondición** | El usuario ingresó a la aplicación. |
-| **Flujo principal** | El usuario selecciona el tipo de almacenamiento, registra su capacidad, número de habitantes y hábitos de consumo. El sistema valida la información, estima el consumo inicial y guarda el perfil localmente. |
-| **Postcondición** | El perfil del hogar queda disponible para calcular la reserva. |
+| **Precondición** | Es la primera vez que se abre la aplicación. |
+| **Flujo principal** | 1) La aplicación muestra qué hace y la casilla de consentimiento. 2) El usuario acepta y toca "Empezar". 3) El sistema guarda que la bienvenida fue completada. 4) Navega a Configurar hogar (o a Mi depósito si el hogar ya estaba configurado). |
+| **Postcondición** | La bienvenida no vuelve a mostrarse. |
 
-| CU-04 | Registrar llenado |
+| CU-02 | Configurar el hogar |
 |---|---|
 | **Actor** | Jefe de hogar |
-| **Precondición** | Existe un perfil del hogar configurado. |
-| **Flujo principal** | El usuario indica si el reservorio se llenó completamente o hasta la mitad. El sistema registra la fecha y hora, actualiza el nivel y recalcula la proyección. |
-| **Postcondición** | La reserva queda actualizada. |
+| **Precondición** | El usuario pasó la bienvenida. |
+| **Flujo principal** | 1) El usuario elige el tipo de depósito (tanque elevado, cisterna o bidones). 2) Ajusta la capacidad, los habitantes y los hábitos. 3) Elige la hora a la que suele llegar el agua. 4) El sistema valida cada campo y muestra el consumo estimado. 5) El usuario toca "Guardar". 6) El sistema guarda el perfil y calcula el consumo por hábitos. |
+| **Flujo alternativo** | Si falta la hora o un valor está fuera de rango, se muestra el error debajo del campo y Guardar queda deshabilitado. |
+| **Postcondición** | El perfil del hogar queda guardado; al editar, se descarta el consumo aprendido. |
 
-| CU-05 | Consultar reserva y agotamiento |
+| CU-03 | Registrar llenado |
 |---|---|
 | **Actor** | Jefe de hogar |
-| **Precondición** | Existe un perfil y al menos un evento de llenado. |
-| **Flujo principal** | El sistema obtiene el último llenado, estima el consumo, calcula los litros restantes, la hora de agotamiento y el déficit frente al próximo abastecimiento. |
-| **Postcondición** | El usuario conoce el estado actual de su reserva. |
+| **Precondición** | El hogar está configurado. |
+| **Flujo principal** | 1) Desde Mi depósito, el usuario elige "llenado completo" o "llenado parcial". 2) Si es completo, confirma. 3) Si es parcial, escribe los litros. 4) El sistema valida y guarda el llenado con la fecha y hora actuales. 5) Vuelve a Mi depósito, que se actualiza solo. |
+| **Flujo alternativo** | Si los litros son 0 o superan la capacidad, se muestra el error y no se guarda. |
+| **Postcondición** | El depósito parte del nuevo llenado. |
+
+| CU-04 | Consultar mi depósito |
+|---|---|
+| **Actor** | Jefe de hogar |
+| **Precondición** | El hogar está configurado. |
+| **Flujo principal** | 1) El sistema obtiene el perfil y el último llenado. 2) Estima el consumo (RN-03). 3) Calcula el nivel actual, la hora de agotamiento, el próximo llenado y el déficit. 4) Muestra la información y la actualiza cada minuto. |
+| **Flujo alternativo** | Si no hay llenados, se invita a registrar el primero. |
+| **Postcondición** | El usuario sabe cuánta agua le queda y hasta cuándo. |
+
+| CU-05 | Consultar qué recortar |
+|---|---|
+| **Actor** | Jefe de hogar |
+| **Precondición** | El depósito tiene déficit. |
+| **Flujo principal** | 1) El usuario toca "¿Qué puedo recortar?". 2) El sistema muestra las recomendaciones que corresponden a sus hábitos. 3) El usuario marca acciones. 4) El sistema recalcula en vivo los litros ganados y los que faltan. |
+| **Postcondición** | El usuario conoce un plan para que el agua alcance. |
 
 | CU-06 | Declarar que se quedó sin agua |
 |---|---|
 | **Actor** | Jefe de hogar |
-| **Precondición** | Existe una reserva activa. |
-| **Flujo principal** | El usuario indica que el agua se agotó ahora o selecciona una hora anterior. El sistema previsualiza el cambio, registra la observación y recalcula el consumo. |
-| **Postcondición** | La reserva queda en cero desde el momento declarado. |
-
-| CU-07 | Consultar recomendaciones de ahorro |
-|---|---|
-| **Actor** | Jefe de hogar |
-| **Precondición** | La reserva presenta un déficit. |
-| **Flujo principal** | El sistema muestra recomendaciones correspondientes a los hábitos del hogar. El usuario selecciona acciones y el sistema calcula litros ahorrados, horas ganadas y déficit restante. |
-| **Postcondición** | El usuario obtiene un plan de reducción de consumo. |
-
-| CU-08 | Consultar cisternas cercanas |
-|---|---|
-| **Actor** | Usuario invitado, autenticado o jefe de hogar |
-| **Precondición** | Existe una ubicación de referencia. |
-| **Flujo principal** | El sistema obtiene los puntos de cisterna, calcula la distancia, descarta los que estén fuera del radio y los muestra ordenados de menor a mayor distancia. |
-| **Postcondición** | El usuario conoce las cisternas disponibles y su estado. |
-
-| CU-09 | Recibir y consultar avisos |
-|---|---|
-| **Actor** | Jefe de hogar |
-| **Precondición** | Existe información suficiente para proyectar la reserva. |
-| **Flujo principal** | El sistema evalúa periódicamente la reserva, registra el aviso y notifica al usuario cuando el agua pueda agotarse antes del siguiente abastecimiento o cuando deba confirmar un llenado. |
-| **Postcondición** | El aviso queda disponible en el historial. |
-
-| CU-10 | Digitalizar recibo |
-|---|---|
-| **Actor** | Jefe de hogar |
-| **Precondición** | El usuario otorgó permiso para usar la cámara. |
-| **Flujo principal** | El usuario fotografía el recibo. El sistema reconoce el texto, extrae los campos, muestra una vista de revisión y permite corregirlos antes de guardar. |
-| **Postcondición** | El recibo validado queda almacenado localmente. |
-
-| CU-11 | Consultar historial de consumo |
-|---|---|
-| **Actor** | Jefe de hogar |
-| **Precondición** | Existe al menos un recibo guardado. |
-| **Flujo principal** | El sistema ordena los recibos por periodo, muestra el historial y representa gráficamente el consumo. |
-| **Postcondición** | El usuario puede comparar su consumo entre periodos. |
-
-| CU-12 | Utilizar asistente hídrico |
-|---|---|
-| **Actor** | Jefe de hogar |
-| **Precondición** | El usuario ingresó a la pantalla del asistente. |
-| **Flujo principal** | El usuario escribe una consulta. El sistema guarda el mensaje, lo envía al servicio remoto cuando existe conexión y muestra la respuesta. |
-| **Postcondición** | La conversación queda disponible localmente. |
-
-| CU-13 | Participar en retos de ahorro |
-|---|---|
-| **Actor** | Jefe de hogar |
-| **Precondición** | Existen retos disponibles. |
-| **Flujo principal** | El usuario consulta los retos, registra su cumplimiento y el sistema actualiza la racha y las insignias. |
-| **Postcondición** | El progreso queda almacenado y pendiente de sincronización cuando corresponda. |
-
-| CU-14 | Reportar incidencia |
-|---|---|
-| **Actor** | Vecino colaborador |
-| **Precondición** | El usuario tiene un sector asociado. |
-| **Flujo principal** | El usuario selecciona el tipo de incidencia, agrega una descripción, una fotografía y una ubicación de referencia. El sistema valida y registra el reporte. |
-| **Postcondición** | La incidencia queda registrada localmente y, cuando sea posible, en la nube. |
-
-| CU-15 | Acceder como invitado |
-|---|---|
-| **Actor** | Usuario invitado |
-| **Precondición** | Es la primera ejecución o no existe una sesión activa. |
-| **Flujo principal** | El usuario selecciona continuar como invitado. El sistema crea o recupera una identidad local y permite el acceso a las funciones locales. |
-| **Postcondición** | El usuario puede utilizar la aplicación sin autenticarse. |
-
-| CU-16 | Iniciar sesión con Google |
-|---|---|
-| **Actor** | Jefe de hogar |
-| **Precondición** | Existe conexión y los servicios de Google están disponibles. |
-| **Flujo principal** | El usuario selecciona iniciar sesión, completa la autenticación y el sistema vincula la sesión con los datos locales e inicia la sincronización. |
-| **Postcondición** | Existe una sesión autenticada o se conserva el modo invitado. |
+| **Precondición** | Existe al menos un llenado. |
+| **Flujo principal** | 1) El sistema muestra lo proyectado frente a lo ocurrido. 2) El usuario elige "Se acabó ahora" o escribe la hora (HH:mm). 3) El sistema valida la hora. 4) Registra el agotamiento y ajusta el consumo (RN-07). 5) Vuelve a Mi depósito. |
+| **Flujo alternativo** | Si la hora tiene formato inválido, es futura o es anterior al último llenado, se muestra el error debajo del campo. |
+| **Postcondición** | El depósito queda en cero desde ese momento y el consumo aprendido se usa en las siguientes proyecciones. |
 
 ### 5.3. Modelo Lógico
 
@@ -472,33 +339,30 @@ Diagrama de robustez: frontera (*boundary*), controladores (*control*) y entidad
 title: Análisis de objetos de AguardApp
 ---
 flowchart LR
-    U(["🧍 Usuario"])
-    APP[/"⊢○ Aplicación móvil"/]
-    GR(("⟳ Gestor de reserva"))
-    GS(("⟳ Gestor de sector"))
-    GRC(("⟳ Gestor de recibos"))
-    GA(("⟳ Gestor de ahorro"))
+    U(["🧍 Jefe de hogar"])
+    PANT[/"⊢○ Pantallas (Compose)"/]
+    VM(("⟳ ViewModels"))
+    REP(("⟳ Repositorio del depósito"))
+    EST(("⟳ Estimar consumo / Calcular déficit / Recortes"))
+    US[("Usuario")]
     PH[("Perfil del hogar")]
-    RE[("Reserva")]
-    CR[("Cronograma")]
-    SE[("Sector")]
-    RC[("Recibo")]
-    RT[("Reto")]
-    RP[("Reporte")]
+    LL[("Evento de llenado")]
+    NV[("Novedad: sin agua")]
 
-    U --> APP
-    APP --> GR & GS & GRC & GA
-    GR --> PH & RE & CR
-    GS --> CR & SE
-    GRC --> RC
-    GA --> RT & RP
+    U --> PANT
+    PANT --> VM
+    VM --> REP
+    VM --> EST
+    REP --> EST
+    REP --> PH & LL & NV
+    VM --> US
 ```
 
 #### b) Diagrama de Actividades con objetos
 
 ```mermaid
 ---
-title: Gestión de la reserva domiciliaria
+title: Gestión del depósito domiciliario
 ---
 flowchart TD
     S((●)) --> A1["Abrir AguardApp"]
@@ -508,57 +372,61 @@ flowchart TD
     A3 --> A4["Guardar Perfil del hogar"]
     A4 --> M1(( ))
     D1 -- Sí --> M1
-    M1 --> A5["Consultar Sector y Cronograma"]
-    A5 --> A6["Registrar llenado"]
-    A6 --> A7["Actualizar Reserva"]
-    A7 --> A8["Calcular nivel y agotamiento"]
-    A8 --> D2{"¿La reserva alcanza?"}
-    D2 -- No --> A9["Generar recomendaciones de ahorro"]
-    A9 --> A10["Emitir aviso"]
-    D2 -- Sí --> A11["Mostrar reserva suficiente"]
-    A10 --> M2(( ))
-    A11 --> M2
-    M2 --> A12["Mostrar estado de la reserva"]
-    A12 --> E((◉))
+    M1 --> A5["Registrar llenado"]
+    A5 --> A6["Guardar Evento de llenado"]
+    A6 --> A7["Estimar consumo y calcular nivel"]
+    A7 --> A8["Calcular déficit hasta el próximo llenado"]
+    A8 --> D2{"¿Hay déficit?"}
+    D2 -- Sí --> A9["Mostrar qué recortar"]
+    D2 -- No --> A10["Mostrar que el agua alcanza"]
+    A9 --> M2(( ))
+    A10 --> M2
+    M2 --> E((◉))
 
     OPH[["📄 Perfil del hogar"]]
-    OSC[["📄 Sector / Cronograma"]]
-    ORE[["📄 Reserva"]]
+    OLL[["📄 Evento de llenado"]]
     A4 -.-> OPH
-    OSC -.-> A5
-    A7 -.-> ORE
+    A6 -.-> OLL
+    OPH -.-> A7
+    OLL -.-> A7
 ```
 
 #### c) Diagrama de Secuencia
 
 ```mermaid
 ---
-title: Consulta y actualización de la reserva
+title: Consulta del depósito y registro de un llenado
 ---
 sequenceDiagram
     autonumber
-    actor U as Usuario
-    participant APP as Aplicación móvil
-    participant GR as Gestor de reserva
-    participant DB as Base de datos local
-    participant GS as Gestor de sector
+    actor U as Jefe de hogar
+    participant S as DepositoScreen
+    participant VM as DepositoViewModel
+    participant RL as RegistrarLlenadoViewModel
+    participant R as DepositoRepository
+    participant DB as Room (SQLite)
+    participant D as CalcularDeficit
 
-    U->>APP: Abre la sección Reserva
-    APP->>GR: Solicitar estado de la reserva
-    GR->>DB: Consultar perfil y último llenado
-    DB-->>GR: Datos del hogar
-    GR->>GS: Consultar próximo abastecimiento
-    GS-->>GR: Fecha y hora del abastecimiento
-    GR->>GR: Calcular nivel, agotamiento y déficit
-    GR-->>APP: Estado de la reserva
-    APP-->>U: Mostrar resultado
-    opt Usuario registra un llenado
-        U->>APP: Indicar nivel del llenado
-        APP->>GR: Registrar llenado
-        GR->>DB: Guardar llenado
-        DB-->>GR: Confirmación
-        GR-->>APP: Reserva actualizada
-        APP-->>U: Mostrar nuevo nivel
+    U->>S: Abre Mi depósito
+    S->>VM: Observa uiState
+    VM->>R: observarPerfil() + observarDeposito()
+    R->>DB: Perfil, llenados y novedades
+    DB-->>R: Datos locales
+    R-->>VM: Perfil y Deposito (con consumo estimado)
+    VM->>D: proximoLlenado() y litrosQueFaltan()
+    D-->>VM: Próximo llenado y déficit
+    VM-->>S: DepositoVista
+    S-->>U: Nivel, "Te alcanza hasta" y déficit
+    opt Registra un llenado
+        U->>S: "Registrar llenado parcial" y escribe los litros
+        S->>RL: onGuardar()
+        RL->>R: registrarLlenado(ahora, litros)
+        R->>DB: INSERT evento_llenado
+        DB-->>R: OK
+        R-->>RL: Resultado exitoso
+        DB-->>R: Flow con el nuevo llenado
+        R-->>VM: Deposito actualizado
+        VM-->>S: Nuevo nivel
     end
 ```
 
@@ -566,82 +434,74 @@ sequenceDiagram
 
 ```mermaid
 ---
-title: Diagrama de clases principal de AguardApp
+title: Diagrama de clases del dominio de AguardApp
 ---
 classDiagram
-    class Usuario {
-        id
-        modoAcceso
+    class ConfiguracionHogar {
+        tipoReservorio
+        capacidad
+        habitantes
+        habitos
+        horaProximoLlenado
     }
     class PerfilHogar {
-        tipoReservorio
-        capacidadLitros
-        habitantes
+        usuarioId
+        consumoPorHabitos
+        consumoVigente
     }
-    class Reserva {
-        nivelLitros
-        consumoEstimado
-        agotamientoProyectado
+    class HabitosDelHogar {
+        duchasPorDia
+        usaLavadora
+        riegaJardin
+    }
+    class Deposito {
+        capacidad
+        consumo
+        agotadoEn
+        nivelEn(momento)
+        agotamientoProyectado()
     }
     class EventoLlenado {
-        fechaHora
-        tipo
+        momento
+        litros
     }
-    class Recibo {
-        periodo
-        consumoM3
-        importe
+    class NivelDeposito {
+        litros
+        porcentaje
     }
-    class Reto {
-        nombre
-        estado
+    class IntervaloConsumo {
+        inicio
+        fin
+        litrosConsumidos
+        clase
     }
-    class Reporte {
-        tipo
+    class Recomendacion {
         descripcion
-        fecha
-    }
-    class Sector {
-        nombre
-        distrito
-    }
-    class Cronograma {
-        fecha
-        horaInicio
-        horaFin
-    }
-    class PuntoCisterna {
-        nombre
-        estado
-        ubicacion
+        litrosQueAhorra
     }
 
-    Usuario "1" -- "1" PerfilHogar
-    Usuario "1" -- "0..*" Recibo
-    Usuario "1" -- "0..*" Reto
-    Usuario "1" -- "0..*" Reporte
-    Usuario "0..*" -- "1" Sector
-    PerfilHogar "1" -- "0..1" Reserva
-    Reserva "1" -- "0..*" EventoLlenado
-    Reserva ..> Cronograma : calcula déficit con
-    Reporte "0..*" --> "1" Sector
-    Sector "1" -- "0..*" Cronograma
-    Sector "1" -- "0..*" PuntoCisterna
+    PerfilHogar "1" *-- "1" ConfiguracionHogar
+    ConfiguracionHogar "1" *-- "1" HabitosDelHogar
+    PerfilHogar "1" -- "0..1" Deposito : se calcula con
+    Deposito "1" --> "1" EventoLlenado : último llenado
+    Deposito ..> NivelDeposito : calcula
+    Deposito ..> IntervaloConsumo : aprende de
+    Recomendacion ..> HabitosDelHogar : corresponde a
 ```
 
 ## 6. Conclusiones
 
-- La especificación de requerimientos definió las funcionalidades del sistema AguardApp mediante 15 requerimientos funcionales y 8 requerimientos no funcionales. Estos requisitos comprenden la gestión de la reserva domiciliaria, consulta del sector y cronograma, ubicación de cisternas, digitalización de recibos, emisión de avisos, retos de ahorro, reportes ciudadanos, asistencia hídrica, operación sin conexión y sincronización con la nube.
-- El modelado de procesos evidenció la mejora que aporta la solución frente al proceso manual actual de los hogares.
-- Los diagramas de paquetes, casos de uso, actividades, secuencia y clases sustentan una arquitectura limpia, modular y multiplataforma.
-
-El desarrollo actual presenta diferentes niveles de disponibilidad según la plataforma. Android concentra las funcionalidades que dependen de servicios específicos del dispositivo, como el reconocimiento de texto del recibo, las notificaciones locales, la ejecución periódica en segundo plano y el inicio de sesión con Google. La versión para iOS comparte la lógica y la interfaz desarrolladas con Kotlin Multiplatform, pero todavía requiere compilación, integración y verificación en un dispositivo compatible.
+- La especificación definió las funcionalidades de AguardApp mediante 8 requerimientos funcionales, 7 no funcionales y 10 reglas de negocio, centrados en la gestión del depósito domiciliario de agua.
+- La reducción del alcance a un solo módulo (Depósito) permite entregar una solución completa, simple y que funciona sin conexión ni cuentas de usuario.
+- El modelado de procesos evidencia la mejora frente al proceso manual: el hogar sabe cuánta agua le queda, hasta cuándo le alcanza y cuántos litros le faltarán antes del próximo llenado.
+- Los diagramas de paquetes, casos de uso, actividades, secuencia y clases reflejan la arquitectura MVVM + DDD implementada en el código.
 
 ## 7. Recomendaciones
 
-- Validar los requerimientos con hogares piloto antes del desarrollo final, priorizando los de alta prioridad (MUST).
-- Mantener la trazabilidad entre requerimientos, casos de uso y pruebas a lo largo del proyecto.
-- Actualizar los diagramas conforme evolucione el diseño, conservando su código Mermaid para facilitar el versionado.
+- Validar las reglas de estimación del consumo (RN-03 a RN-07) con hogares piloto y ajustar sus parámetros.
+- Agregar pruebas unitarias para la capa de dominio, que es Kotlin puro y no depende de Android.
+- Mantener la trazabilidad entre requerimientos, casos de uso y pruebas en las próximas versiones.
+- Evaluar en versiones futuras los módulos que quedaron fuera del alcance (sector, notificaciones, sincronización) sin perder el funcionamiento sin conexión.
 
 ## 8. Bibliografía
 
@@ -649,10 +509,12 @@ El desarrollo actual presenta diferentes niveles de disponibilidad según la pla
 - Sommerville, I. (2016). *Ingeniería de Software* (10.ª ed.). Pearson Educación.
 - Pressman, R. S. (2014). *Ingeniería del Software: Un Enfoque Práctico* (8.ª ed.). McGraw-Hill.
 - IEEE. (1998). *IEEE Std 830-1998 – Recommended Practice for Software Requirements Specifications*.
+- Evans, E. (2003). *Domain-Driven Design: Tackling Complexity in the Heart of Software*. Addison-Wesley.
 
 ## 9. Webgrafía
 
-- Documentación de Kotlin Multiplatform: <https://kotlinlang.org/docs/multiplatform.html>
-- Documentación de Compose Multiplatform: <https://www.jetbrains.com/compose-multiplatform/>
-- Documentación de Supabase: <https://supabase.com/docs>
+- Documentación de Jetpack Compose: <https://developer.android.com/compose>
+- Documentación de Room: <https://developer.android.com/training/data-storage/room>
+- Guía de arquitectura de apps Android: <https://developer.android.com/topic/architecture>
+- Documentación de Koin: <https://insert-koin.io/docs>
 - Documentación de Mermaid: <https://mermaid.js.org/>
