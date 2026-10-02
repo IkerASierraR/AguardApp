@@ -184,12 +184,12 @@ Tras el análisis se mantuvieron los requerimientos iniciales y se precisaron su
 | ID | Requerimiento | Descripción | Prioridad |
 |---|---|---|---|
 | RF-01 | Mostrar bienvenida | Se muestra solo la primera vez; sin aceptar el consentimiento no se puede empezar. | Alta |
-| RF-02 | Configurar el hogar | Capacidad entre 200 y 5000 L; habitantes entre 1 y 12; hábitos (duchas por día, lavadora, riego) y hora del próximo llenado obligatoria. El botón Guardar se deshabilita mientras haya errores. Se usa al inicio y para editar desde Mi depósito. | Alta |
+| RF-02 | Configurar el hogar | Capacidad entre 200 y 5000 L; habitantes entre 1 y 12; hábitos (duchas por día, lavadora, riego) y hora del próximo llenado obligatoria, escrita con 4 números en formato de 24 h (el ":" se agrega solo). Los errores de la hora se muestran al tocar Guardar. El botón Guardar se deshabilita mientras haya errores. Se usa al inicio y para editar desde Mi depósito. | Alta |
 | RF-03 | Registrar llenado | Completo: se registran los litros de la capacidad. Parcial: los litros deben ser mayores que 0 y no superar la capacidad. No se pueden registrar llenados en el futuro. | Alta |
 | RF-04 | Consultar el depósito | Nivel actual en litros y porcentaje, último llenado, "Te alcanza hasta", próximo llenado, consumo en L/h y promedio en L/persona/día. Se actualiza solo cada minuto. | Alta |
 | RF-05 | Calcular el déficit | Déficit = consumo por hora × horas hasta el próximo llenado − nivel actual (nunca negativo). | Alta |
 | RF-06 | Recomendar recortes | Solo se sugieren las acciones que corresponden a los hábitos del hogar; se muestra "Ganas X L" y "Te faltan Y L" o "¡Cubriste el déficit!". | Media |
-| RF-07 | Declarar que se quedó sin agua | Opciones "Se acabó ahora" o "Se acabó antes, a las HH:mm". La hora debe tener formato válido, no ser futura y ser posterior al último llenado. Antes de registrar se muestra lo proyectado frente a lo ocurrido. | Media |
+| RF-07 | Declarar que se quedó sin agua | Opciones "Se acabó ahora" o "Se acabó antes, a las HH:mm" (4 números en formato de 24 h; el ":" se agrega solo). Una hora posterior a la actual se toma como del día anterior. La hora debe existir, no ser futura y ser posterior al último llenado; cada caso tiene su propio mensaje. Antes de registrar se muestra lo proyectado frente a lo ocurrido, y la comparación se actualiza con la hora escrita. El botón Registrar no permite registros duplicados. | Media |
 | RF-08 | Operar sin conexión | Todas las funciones trabajan con la base local. | Alta |
 
 ### d) Reglas de Negocio
@@ -324,7 +324,7 @@ flowchart LR
 |---|---|
 | **Actor** | Jefe de hogar |
 | **Precondición** | Existe al menos un llenado. |
-| **Flujo principal** | 1) El sistema muestra lo proyectado frente a lo ocurrido. 2) El usuario elige "Se acabó ahora" o escribe la hora (HH:mm). 3) El sistema valida la hora. 4) Registra el agotamiento y ajusta el consumo (RN-07). 5) Vuelve a Mi depósito. |
+| **Flujo principal** | 1) El sistema muestra lo proyectado frente a lo ocurrido. 2) El usuario elige "Se acabó ahora" o escribe la hora (HH:mm); la comparación se actualiza con esa hora. 3) El sistema valida la hora (si es posterior a la actual, se toma como de ayer). 4) Registra el agotamiento y ajusta el consumo (RN-07). 5) Vuelve a Mi depósito. |
 | **Flujo alternativo** | Si la hora tiene formato inválido, es futura o es anterior al último llenado, se muestra el error debajo del campo. |
 | **Postcondición** | El depósito queda en cero desde ese momento y el consumo aprendido se usa en las siguientes proyecciones. |
 

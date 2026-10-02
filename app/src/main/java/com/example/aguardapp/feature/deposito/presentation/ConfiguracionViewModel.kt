@@ -32,8 +32,10 @@ data class ConfiguracionUiState(
     val duchasPorDia: Int = 2,
     val usaLavadora: Boolean = true,
     val riegaJardin: Boolean = false,
+    val horaTexto: String = "",
     val horaProximoLlenado: LocalTime? = null,
     val consumoEstimadoLitrosPorHora: Int = 0,
+    val intentoGuardar: Boolean = false,
     val guardando: Boolean = false,
     val guardado: Boolean = false,
     val error: String? = null
@@ -47,10 +49,15 @@ data class ConfiguracionUiState(
         get() = if (habitantes in 1..HABITANTES_MAXIMOS) null else "Los habitantes deben estar entre 1 y $HABITANTES_MAXIMOS"
 
     val errorHora: String?
-        get() = if (horaProximoLlenado != null) null else "Elige la hora a la que suele llegar el agua"
+        get() = when {
+            !intentoGuardar || horaProximoLlenado != null -> null
+            horaTexto.isEmpty() -> "Falta la hora del próximo llenado"
+            horaTexto.length < 4 -> "Escribe la hora completa"
+            else -> "La hora no existe: usa de 00:00 a 23:59"
+        }
 
     val puedeGuardar: Boolean
-        get() = errorCapacidad == null && errorHabitantes == null && errorHora == null && !guardando
+        get() = errorCapacidad == null && errorHabitantes == null && horaProximoLlenado != null && !guardando
 }
 
 class ConfiguracionViewModel(private val repositorio: DepositoRepository) : ViewModel() {
@@ -76,6 +83,7 @@ class ConfiguracionViewModel(private val repositorio: DepositoRepository) : View
                         duchasPorDia = configuracion.habitos.duchasPorDia,
                         usaLavadora = configuracion.habitos.usaLavadora,
                         riegaJardin = configuracion.habitos.riegaJardin,
+                        horaTexto = digitosDeHora(configuracion.horaProximoLlenado),
                         horaProximoLlenado = configuracion.horaProximoLlenado
                     )
                 )
@@ -98,11 +106,13 @@ class ConfiguracionViewModel(private val repositorio: DepositoRepository) : View
 
     fun onRiegoChange() = _uiState.update { conConsumo(it.copy(riegaJardin = !it.riegaJardin)) }
 
-    fun onHoraChange(hora: LocalTime) = _uiState.update { it.copy(horaProximoLlenado = hora) }
+    fun onHoraChange(digitos: String) =
+        _uiState.update { it.copy(horaTexto = digitos, horaProximoLlenado = horaDesdeDigitos(digitos)) }
 
     fun onDescartarError() = _uiState.update { it.copy(error = null) }
 
     fun onGuardar() {
+        _uiState.update { it.copy(intentoGuardar = true) }
         val estado = _uiState.value
         val hora = estado.horaProximoLlenado
         if (!estado.puedeGuardar || hora == null) return

@@ -13,13 +13,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TimePicker
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,10 +26,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.datetime.LocalTime
 import com.example.aguardapp.R
 import com.example.aguardapp.core.ui.theme.AguaMedia
 import com.example.aguardapp.core.ui.theme.Blanco
@@ -133,15 +136,34 @@ fun TextoDeError(mensaje: String?) {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DialogoDeHora(titulo: String, horaInicial: LocalTime, onConfirmar: (LocalTime) -> Unit, onCancelar: () -> Unit) {
-    val estado = rememberTimePickerState(horaInicial.hour, horaInicial.minute, is24Hour = false)
-    AlertDialog(
-        onDismissRequest = onCancelar,
-        title = { Text(titulo, fontFamily = FuenteTexto) },
-        text = { TimePicker(estado) },
-        confirmButton = { TextButton({ onConfirmar(LocalTime(estado.hour, estado.minute)) }) { Text("Aceptar", color = AguaMedia) } },
-        dismissButton = { TextButton(onCancelar) { Text("Cancelar", color = AguaMedia) } }
-    )
+fun CampoDeHora(digitos: String, onCambiar: (String) -> Unit, error: String?, modifier: Modifier = Modifier) {
+    Column(modifier) {
+        OutlinedTextField(
+            value = digitos,
+            onValueChange = { texto -> onCambiar(texto.filter { it.isDigit() }.take(4)) },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("Hora (24 h)", fontFamily = FuenteTexto) },
+            singleLine = true,
+            isError = error != null,
+            visualTransformation = MascaraDeHora,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            shape = RoundedCornerShape(16.dp),
+            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = AguaMedia, focusedLabelColor = AguaMedia)
+        )
+        TextoDeError(error)
+    }
+}
+
+private object MascaraDeHora : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText {
+        val digitos = text.text
+        if (digitos.length <= 2) return TransformedText(text, OffsetMapping.Identity)
+        val conPuntos = digitos.take(2) + ":" + digitos.drop(2)
+        val mapeo = object : OffsetMapping {
+            override fun originalToTransformed(offset: Int): Int = if (offset <= 2) offset else offset + 1
+            override fun transformedToOriginal(offset: Int): Int = if (offset <= 2) offset else offset - 1
+        }
+        return TransformedText(AnnotatedString(conPuntos), mapeo)
+    }
 }

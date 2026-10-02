@@ -10,14 +10,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
@@ -29,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -44,8 +39,8 @@ import com.example.aguardapp.core.ui.theme.TintaSuave
 import com.example.aguardapp.feature.deposito.presentation.componentes.AvisoDeError
 import com.example.aguardapp.feature.deposito.presentation.componentes.BarraSuperior
 import com.example.aguardapp.feature.deposito.presentation.componentes.BotonPrincipal
+import com.example.aguardapp.feature.deposito.presentation.componentes.CampoDeHora
 import com.example.aguardapp.feature.deposito.presentation.componentes.TarjetaBlanca
-import com.example.aguardapp.feature.deposito.presentation.componentes.TextoDeError
 
 private val MARGEN = Modifier.padding(horizontal = 24.dp)
 
@@ -70,7 +65,7 @@ fun SinAguaScreen(
                 vista != null -> Comparacion(vista, MARGEN)
             }
             OpcionesDeCuando(uiState, viewModel::onOpcionChange, viewModel::onHoraChange, MARGEN)
-            BotonPrincipal("Registrar", viewModel::onRegistrar, MARGEN, color = Coral)
+            BotonPrincipal(if (uiState.guardando) "Registrando…" else "Registrar", viewModel::onRegistrar, MARGEN, color = Coral, habilitado = !uiState.guardando)
             Text(
                 "Con este registro la app aprende tu consumo real y ajusta la proyección del próximo día.",
                 MARGEN, fontFamily = FuenteTexto, fontSize = 12.sp, color = TintaSuave
@@ -109,21 +104,7 @@ private fun OpcionesDeCuando(
         FilaDeOpcion("Se acabó ahora", uiState.opcion == OpcionSinAgua.AHORA) { onOpcionChange(OpcionSinAgua.AHORA) }
         FilaDeOpcion("Se acabó antes, a las...", uiState.opcion == OpcionSinAgua.ANTES) { onOpcionChange(OpcionSinAgua.ANTES) }
         if (uiState.opcion == OpcionSinAgua.ANTES) {
-            Column(Modifier.padding(start = 12.dp, end = 12.dp, bottom = 8.dp)) {
-                OutlinedTextField(
-                    value = uiState.horaTexto,
-                    onValueChange = onHoraChange,
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Hora (HH:mm)", fontFamily = FuenteTexto) },
-                    placeholder = { Text("14:30", fontFamily = FuenteTexto) },
-                    singleLine = true,
-                    isError = uiState.errorHora != null,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = AguaMedia, focusedLabelColor = AguaMedia)
-                )
-                TextoDeError(uiState.errorHora)
-            }
+            CampoDeHora(uiState.horaTexto, onHoraChange, uiState.errorHora, Modifier.padding(start = 12.dp, end = 12.dp, bottom = 8.dp))
         }
     }
 }

@@ -18,6 +18,17 @@ fun formatearHora(hora: LocalTime): String {
     return "$hora12:${hora.minute.toString().padStart(2, '0')} $sufijo"
 }
 
+fun horaDesdeDigitos(digitos: String): LocalTime? {
+    if (digitos.length != 4 || !digitos.all { it.isDigit() }) return null
+    val hora = digitos.take(2).toInt()
+    val minuto = digitos.takeLast(2).toInt()
+    if (hora > 23 || minuto > 59) return null
+    return LocalTime(hora, minuto)
+}
+
+fun digitosDeHora(hora: LocalTime): String =
+    hora.hour.toString().padStart(2, '0') + hora.minute.toString().padStart(2, '0')
+
 fun formatearDuracion(horas: Double): String {
     val minutos = (horas * 60).roundToInt()
     val enteras = minutos / 60
@@ -35,6 +46,7 @@ fun describirMomento(momento: LocalDateTime, ahora: LocalDateTime): String {
     val dia = when (fecha) {
         ahora.date -> "hoy"
         ahora.date.plus(1, DateTimeUnit.DAY) -> "mañana"
+        ahora.date.minus(1, DateTimeUnit.DAY) -> "ayer"
         else -> "el ${fecha.day}/${fecha.month.number}"
     }
     return "$dia ${formatearHora(redondeado.time)}"

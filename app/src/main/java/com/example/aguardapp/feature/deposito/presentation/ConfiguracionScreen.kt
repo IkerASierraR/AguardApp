@@ -1,9 +1,6 @@
 package com.example.aguardapp.feature.deposito.presentation
 
 import androidx.compose.foundation.background
-import androidx.compose.ui.Alignment
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,25 +10,19 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.datetime.LocalTime
 import com.example.aguardapp.core.ui.theme.AguaMedia
 import com.example.aguardapp.core.ui.theme.Divisor
 import com.example.aguardapp.core.ui.theme.FuenteTexto
 import com.example.aguardapp.core.ui.theme.IconosClarosEnBarraDeEstado
-import com.example.aguardapp.core.ui.theme.Tinta
 import com.example.aguardapp.core.ui.theme.TintaSuave
 import com.example.aguardapp.core.ui.theme.TintaTenue
 import com.example.aguardapp.feature.deposito.presentation.componentes.AvisoDeError
@@ -40,7 +31,7 @@ import com.example.aguardapp.feature.deposito.presentation.componentes.BotonPrin
 import com.example.aguardapp.feature.deposito.presentation.componentes.ControlCompacto
 import com.example.aguardapp.feature.deposito.presentation.componentes.ControlDeCapacidad
 import com.example.aguardapp.feature.deposito.presentation.componentes.ControlDeHabitantes
-import com.example.aguardapp.feature.deposito.presentation.componentes.DialogoDeHora
+import com.example.aguardapp.feature.deposito.presentation.componentes.CampoDeHora
 import com.example.aguardapp.feature.deposito.presentation.componentes.FilaDeHabito
 import com.example.aguardapp.feature.deposito.presentation.componentes.FilaSiNo
 import com.example.aguardapp.feature.deposito.presentation.componentes.SeccionConfiguracion
@@ -78,8 +69,7 @@ fun ConfiguracionScreen(
                 TextoDeError(uiState.errorHabitantes)
             }
             SeccionConfiguracion("Próximo llenado", MARGEN) {
-                TarjetaDeHora(uiState.horaProximoLlenado, viewModel::onHoraChange)
-                TextoDeError(uiState.errorHora)
+                TarjetaDeHora(uiState.horaTexto, uiState.errorHora, viewModel::onHoraChange)
             }
             SeccionConfiguracion("Hábitos · estimación inicial", MARGEN) {
                 TarjetaBlanca {
@@ -97,43 +87,19 @@ fun ConfiguracionScreen(
             if (uiState.guardando) "Guardando…" else "Guardar",
             viewModel::onGuardar,
             MARGEN.padding(top = 8.dp, bottom = 14.dp),
-            habilitado = uiState.puedeGuardar
+            habilitado = !uiState.guardando
         )
     }
 }
 
 @Composable
-private fun TarjetaDeHora(hora: LocalTime?, onElegir: (LocalTime) -> Unit) {
-    var eligiendo by rememberSaveable { mutableStateOf(false) }
+private fun TarjetaDeHora(digitos: String, error: String?, onCambiar: (String) -> Unit) {
     TarjetaBlanca {
         Text("Hora en que suele llegar el agua", fontFamily = FuenteTexto, fontSize = 12.5.sp, fontWeight = FontWeight.Medium, color = TintaSuave)
-        Row(
-            Modifier.fillMaxWidth().padding(vertical = 4.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                hora?.let { formatearHora(it) } ?: "Sin elegir",
-                fontFamily = FuenteTexto, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = if (hora != null) Tinta else TintaTenue
-            )
-            TextButton({ eligiendo = true }) {
-                Text(if (hora != null) "Cambiar" else "Elegir", fontFamily = FuenteTexto, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = AguaMedia)
-            }
-        }
+        CampoDeHora(digitos, onCambiar, error, Modifier.padding(vertical = 4.dp))
         Text(
             "Con esta hora calculamos si el agua te alcanza hasta el próximo llenado.",
             fontFamily = FuenteTexto, fontSize = 11.sp, lineHeight = 15.sp, color = TintaTenue
-        )
-    }
-    if (eligiendo) {
-        DialogoDeHora(
-            titulo = "¿A qué hora suele llegar el agua?",
-            horaInicial = hora ?: LocalTime(5, 0),
-            onConfirmar = { nueva ->
-                eligiendo = false
-                onElegir(nueva)
-            },
-            onCancelar = { eligiendo = false }
         )
     }
 }

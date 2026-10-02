@@ -160,11 +160,11 @@ Las pantallas implementadas y sus rutas de navegación son:
 | Ruta | Pantalla | Función |
 |---|---|---|
 | `bienvenida` | Bienvenida | Presenta la app y pide el consentimiento (solo la primera vez). |
-| `configurar_hogar` | Configurar hogar | Formulario del hogar con validaciones y hora del próximo llenado. |
+| `configurar_hogar` | Configurar hogar | Formulario del hogar con validaciones y hora del próximo llenado escrita en formato 24 h. |
 | `mi_deposito` | Mi depósito | Nivel, "Te alcanza hasta", próximo llenado, déficit y consumo. |
 | `registrar_llenado/{tipo}` | Registrar llenado | Llenado completo (confirmar) o parcial (con litros). |
 | `que_recortar/{deficit}` | Qué recortar | Recomendaciones con casillas y cálculo en vivo. |
-| `me_quede_sin_agua` | Me quedé sin agua | "Se acabó ahora" o "Se acabó antes, a las HH:mm". |
+| `me_quede_sin_agua` | Me quedé sin agua | "Se acabó ahora" o "Se acabó antes, a las HH:mm" (hora escrita; si es posterior a la actual, se toma como de ayer). |
 
 ### 5.3. Metodología de implementación (Documento de VISIÓN, SRS, SAD)
 
