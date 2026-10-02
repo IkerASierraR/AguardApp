@@ -3,7 +3,7 @@
 > **Universidad Privada de Tacna** · Facultad de Ingeniería · Escuela Profesional de Ingeniería de Sistemas
 > **Curso:** Soluciones Móviles I · **Docente:** Mag. Alberto Johnatan Flor Rodríguez
 > **Proyecto:** AguardApp
-> **Versión:** 2.0 · Tacna – Perú, 2026
+> **Versión:** 2.1 · Tacna – Perú, 2026
 
 **Integrantes**
 
@@ -20,6 +20,7 @@
 |---|---|---|---|---|---|
 | 1.0 | DJ - JL - CM - IS | AFR | AFR | 30/09/2026 | Versión Original |
 | 2.0 | DJ - JL - CM - IS | — | — | 02/10/2026 | Actualización al sistema AguardApp: aplicación Android nativa, módulo Depósito y base de datos local |
+| 2.1 | DJ - JL - CM - IS | — | — | 02/10/2026 | Se agrega la pantalla Avisos a las funcionalidades implementadas |
 
 ## Índice
 
@@ -65,13 +66,14 @@ El desarrollo de AguardApp se justifica por la necesidad de que cada hogar conoz
 - Cálculo del nivel actual, de la hora de agotamiento y del déficit de litros hasta el próximo llenado.
 - Recomendaciones de recorte de consumo según los hábitos del hogar, con un plan que se guarda hasta el próximo llenado.
 - Declaración de "me quedé sin agua", con la que la aplicación aprende el consumo real.
+- Avisos dentro de la aplicación cuando el agua no alcanza hasta el próximo llenado, cuando el nivel baja del 20 % o cuando aún no se registró ningún llenado.
 - Operación 100 % sin conexión con una base de datos local (Room / SQLite).
 
 **Fuera del alcance del proyecto se considera:**
 
 - La consulta del sector, los cronogramas oficiales y el mapa de cisternas.
 - La digitalización de recibos, los retos y reportes ciudadanos y el asistente hídrico.
-- La sincronización en la nube, el inicio de sesión con Google y las notificaciones.
+- La sincronización en la nube, el inicio de sesión con Google y las notificaciones push (los avisos solo se muestran dentro de la aplicación).
 - La versión para iOS y la integración con los sistemas de EPS Tacna.
 
 El proyecto se ejecuta entre agosto y diciembre de 2026, con una inversión estimada de S/ 17,720.00 cubierta con recursos propios del equipo.
@@ -85,7 +87,7 @@ Desarrollar una aplicación móvil que permita a los hogares de Tacna conocer y 
 ### 3.2. Objetivos específicos
 
 - **Gestionar el depósito del hogar:** calcular el nivel actual y proyectar hasta cuándo alcanza el agua.
-- **Anticipar la falta de agua:** calcular el déficit de litros hasta el próximo llenado y recomendar recortes de consumo.
+- **Anticipar la falta de agua:** calcular el déficit de litros hasta el próximo llenado, avisar al usuario y recomendar recortes de consumo.
 - **Aprender el consumo real:** ajustar la estimación con el historial de llenados y las declaraciones de "me quedé sin agua".
 - **Operar sin conexión y con privacidad:** funcionar sin internet y sin sacar datos del teléfono.
 
@@ -163,8 +165,14 @@ Las pantallas implementadas y sus rutas de navegación son:
 | `configurar_hogar` | Configurar hogar | Formulario del hogar con validaciones y hora del próximo llenado escrita en formato 24 h. |
 | `mi_deposito` | Mi depósito | Nivel, "Te alcanza hasta", próximo llenado, déficit y consumo. |
 | `registrar_llenado/{tipo}` | Registrar llenado | Llenado completo (confirmar) o parcial (con litros). |
+<<<<<<< HEAD
 | `que_recortar` | Qué recortar | Recomendaciones con litros según el hogar; lo marcado se guarda hasta el próximo llenado y se refleja en Mi depósito y Avisos. |
 | `me_quede_sin_agua` | Me quedé sin agua | "Se acabó ahora" o "Se acabó antes, a las HH:mm" (hora escrita; si es posterior a la actual, se toma como de ayer). |
+=======
+| `que_recortar/{deficit}` | Qué recortar | Recomendaciones con casillas y cálculo en vivo. |
+| `me_quede_sin_agua` | Me quedé sin agua | "Se acabó ahora" o "Se acabó antes, a las HH:mm". |
+| `avisos` | Avisos | Alertas de déficit, nivel bajo (menos del 20 %) o sin llenado; cada aviso lleva a la pantalla que lo resuelve. |
+>>>>>>> 8e708ca9b09819baaa17a6ebe4c00186960a411c
 
 ### 5.3. Metodología de implementación (Documento de VISIÓN, SRS, SAD)
 
@@ -186,8 +194,10 @@ Durante la implementación se tomaron estas decisiones:
 3. **Solo datos locales:** se eliminaron la sincronización con Supabase, el inicio de sesión con Google y las notificaciones; la aplicación ya no necesita internet ni permisos.
 4. **Simplificación de la arquitectura:** cada pantalla quedó con un Screen y un ViewModel; los modelos y casos de uso del dominio se agruparon por tema; la inyección de dependencias se concentró en un único módulo.
 5. **Diseño:** colores sólidos sin degradados ni sombras, y una sola fuente tipográfica en toda la app.
+6. **Avisos dentro de la aplicación:** en lugar de notificaciones push, que requieren permisos, se agregó una pantalla de avisos que se calcula a partir del depósito y no necesita tablas nuevas.
+7. **Base de datos versión 2:** el esquema de Room se exporta en `app/schemas/`; al no haber migraciones, cada cambio de versión recrea la base local.
 
-Al cierre de esta versión se cuenta con una aplicación funcional que permite configurar el hogar, registrar llenados, consultar el depósito y el déficit, ver qué recortar y declarar que se quedó sin agua, todo sin conexión.
+Al cierre de esta versión se cuenta con una aplicación funcional que permite configurar el hogar, registrar llenados, consultar el depósito y el déficit, ver qué recortar, declarar que se quedó sin agua y consultar los avisos del depósito, todo sin conexión.
 
 ## 6. Cronograma
 
@@ -271,7 +281,7 @@ pie showData
 
 - Realizar un piloto con 20 a 30 hogares para validar la estimación del consumo y ajustar sus parámetros.
 - Agregar pruebas unitarias para la capa de dominio (estimación del consumo, déficit y recortes), que es Kotlin puro.
-- Evaluar en próximas versiones la reincorporación de funciones fuera del alcance actual (avisos, sector y cronograma oficial, sincronización opcional), sin perder el funcionamiento sin conexión.
+- Evaluar en próximas versiones la reincorporación de funciones fuera del alcance actual (notificaciones push a partir de los avisos actuales, sector y cronograma oficial, sincronización opcional), sin perder el funcionamiento sin conexión.
 - Mantener las pruebas en dispositivos físicos de gama básica.
 
 ## Bibliografía

@@ -2,8 +2,8 @@
 
 > **Universidad Privada de Tacna** · Facultad de Ingeniería · Escuela Profesional de Ingeniería de Sistemas
 > **Curso:** Soluciones Móviles I · **Docente:** Mag. Alberto Johnatan Flor Rodríguez
-> **Sistema:** AguardApp: sistema móvil para la gestión del depósito domiciliario de agua durante el racionamiento hídrico en Tacna
-> **Versión:** 2.0 · Tacna – Perú, 2026
+> **Sistema:** AguardApp: sistema móvil para la gestión de la reserva domiciliaria de agua y la anticipación de cortes durante el racionamiento hídrico en Tacna
+> **Versión:** 2.1 · Tacna – Perú, 2026
 
 **Integrantes**
 
@@ -20,6 +20,7 @@
 |---|---|---|---|---|---|
 | 1.0 | DJ - JL - CM - IS | AFR | AFR | 30/09/2026 | Versión Original |
 | 2.0 | DJ - JL - CM - IS | — | — | 02/10/2026 | Actualización al sistema AguardApp: aplicación Android nativa centrada en el módulo Depósito, con base de datos local |
+| 2.1 | DJ - JL - CM - IS | — | — | 02/10/2026 | Se agrega la pantalla Avisos (RF-09, RN-11, CU-07) |
 
 ## Índice
 
@@ -39,7 +40,7 @@
 
 ### 1.1. Nombre de la Empresa
 
-AguardApp: sistema móvil para la gestión del depósito domiciliario de agua durante el racionamiento hídrico en Tacna.
+AguardApp: sistema móvil para la gestión de la reserva domiciliaria de agua y la anticipación de cortes durante el racionamiento hídrico en Tacna.
 
 ### 1.2. Visión
 
@@ -83,11 +84,11 @@ La ciudad de Tacna se abastece de agua potable bajo un esquema de racionamiento,
 
 ### 2.4. Alcance del proyecto
 
-El sistema comprende la configuración del hogar (tipo y capacidad del depósito, habitantes, hábitos de consumo y hora habitual de llegada del agua), el registro de llenados completos o parciales, el cálculo del nivel actual del depósito, la proyección de la hora de agotamiento, el cálculo del déficit de litros hasta el próximo llenado, las recomendaciones de recorte de consumo y la declaración de "me quedé sin agua", con la que la aplicación aprende el consumo real del hogar.
+El sistema comprende la configuración del hogar (tipo y capacidad del depósito, habitantes, hábitos de consumo y hora habitual de llegada del agua), el registro de llenados completos o parciales, el cálculo del nivel actual del depósito, la proyección de la hora de agotamiento, el cálculo del déficit de litros hasta el próximo llenado, las recomendaciones de recorte de consumo, la declaración de "me quedé sin agua", con la que la aplicación aprende el consumo real del hogar, y una pantalla de avisos que alerta dentro de la aplicación sobre el déficit, el nivel bajo o la falta de un llenado registrado.
 
 La aplicación es nativa para Android y se desarrolla con Kotlin, Jetpack Compose, Room, Koin y Navigation Compose. Todos los datos se guardan en una base de datos SQLite local; la aplicación no necesita internet ni cuentas de usuario.
 
-Quedan fuera del alcance de esta versión: la consulta del sector y del cronograma oficial, el mapa de cisternas, la confirmación colaborativa de horarios, la digitalización de recibos, los retos y reportes ciudadanos, el asistente hídrico, la sincronización en la nube, el inicio de sesión con Google, las notificaciones y la versión para iOS.
+Quedan fuera del alcance de esta versión: la consulta del sector y del cronograma oficial, el mapa de cisternas, la confirmación colaborativa de horarios, la digitalización de recibos, los retos y reportes ciudadanos, el asistente hídrico, la sincronización en la nube, el inicio de sesión con Google, las notificaciones push (los avisos solo se muestran dentro de la aplicación) y la versión para iOS.
 
 ### 2.5. Viabilidad del Sistema
 
@@ -140,7 +141,8 @@ flowchart TD
     M2 --> A4["Calcular el nivel actual"]
     A4 --> A5["Proyectar hasta cuándo alcanza"]
     A5 --> A6["Calcular el déficit hasta<br/>el próximo llenado"]
-    A6 --> D3{"¿Hay déficit?"}
+    A6 --> AV["Consultar avisos<br/>(déficit, nivel bajo, sin llenado)"]
+    AV --> D3{"¿Hay déficit?"}
     D3 -- Sí --> A7["Consultar qué recortar<br/>y marcar recomendaciones"]
     D3 -- No --> M3(( ))
     A7 --> M3
@@ -164,6 +166,7 @@ flowchart TD
 | RF-06 | Recomendar recortes | Mostrar recomendaciones de ahorro según los hábitos del hogar y recalcular en vivo los litros ganados y los que faltan. | Media |
 | RF-07 | Declarar que se quedó sin agua | Registrar que el agua se acabó ahora o a una hora anterior y ajustar el consumo estimado del hogar. | Media |
 | RF-08 | Operar sin conexión | Funcionar sin internet, guardando toda la información en el teléfono. | Alta |
+| RF-09 | Consultar avisos | Mostrar dentro de la aplicación las alertas del depósito y llevar al usuario a la pantalla que las resuelve. | Media |
 
 ### b) Cuadro de Requerimientos No funcionales
 
@@ -179,7 +182,7 @@ flowchart TD
 
 ### c) Cuadro de Requerimientos funcionales Final
 
-Tras el análisis se mantuvieron los requerimientos iniciales y se precisaron sus validaciones:
+Tras el análisis se mantuvieron los requerimientos iniciales, se precisaron sus validaciones y se detalló el requerimiento de avisos (RF-09):
 
 | ID | Requerimiento | Descripción | Prioridad |
 |---|---|---|---|
@@ -191,6 +194,7 @@ Tras el análisis se mantuvieron los requerimientos iniciales y se precisaron su
 | RF-06 | Recomendar recortes | Solo se sugieren las acciones que corresponden a los hábitos del hogar, con litros calculados para ese hogar; se muestra "Ahorras X L" y "Aún te faltan Y L" o "¡Con esto te alcanza hasta el próximo llenado!". Lo marcado se guarda como plan de recortes hasta el próximo llenado (o hasta registrar un llenado nuevo), se vuelve a mostrar al entrar y se refleja en Mi depósito ("Con tus recortes") y en Avisos. | Media |
 | RF-07 | Declarar que se quedó sin agua | Opciones "Se acabó ahora" o "Se acabó antes, a las HH:mm" (4 números en formato de 24 h; el ":" se agrega solo). Una hora posterior a la actual se toma como del día anterior. La hora debe existir, no ser futura y ser posterior al último llenado; cada caso tiene su propio mensaje. Antes de registrar se muestra lo proyectado frente a lo ocurrido, y la comparación se actualiza con la hora escrita. El botón Registrar no permite registros duplicados. | Media |
 | RF-08 | Operar sin conexión | Todas las funciones trabajan con la base local. | Alta |
+| RF-09 | Consultar avisos | Se abre desde "Ver avisos" en Mi depósito. Los avisos se generan según RN-11, cada tipo con su color; al tocar uno se navega a Qué recortar, a Registrar llenado completo o de vuelta a Mi depósito. Sin avisos se indica que el depósito alcanza hasta el próximo llenado. | Media |
 
 ### d) Reglas de Negocio
 
@@ -206,6 +210,7 @@ Tras el análisis se mantuvieron los requerimientos iniciales y se precisaron su
 | RN-08 | Al registrar un llenado se descarta el consumo aprendido y se vuelve a estimar con todo el historial. |
 | RN-09 | Las recomendaciones de recorte y su ahorro diario son: no lavar ropa hoy (100 L, si usa lavadora), no regar el jardín (150 L, si riega), duchas de 5 minutos (la mitad de 30 L por ducha × duchas por día × habitantes), lavar los platos en un recipiente (8 L por persona) y echar al inodoro agua ya usada (10 L por persona). El ahorro se multiplica por la parte del día de uso (12 h) que falta hasta el próximo llenado, con un máximo de un día; así es coherente con el cálculo del déficit. |
 | RN-10 | El usuario se identifica con un UUID local que se crea una sola vez y no cambia. |
+| RN-11 | Los avisos se generan así: si el hogar no tiene llenados, solo "¿Llegó el agua a tu casa?"; si hay déficit (RF-05), "Tu reserva se agota antes de que vuelva el agua"; y si el nivel actual es menor al 20 % de la capacidad, "Te queda poca agua". Los avisos se calculan al vuelo y no se guardan. |
 
 ## 5. Fase de Desarrollo
 
@@ -213,7 +218,7 @@ Tras el análisis se mantuvieron los requerimientos iniciales y se precisaron su
 
 | Perfil | Descripción | Permisos principales |
 |---|---|---|
-| Jefe de hogar | Persona que administra el agua de la casa | Configurar el hogar, registrar llenados, consultar el depósito y el déficit, ver qué recortar y declarar que se quedó sin agua |
+| Jefe de hogar | Persona que administra el agua de la casa | Configurar el hogar, registrar llenados, consultar el depósito y el déficit, ver qué recortar, declarar que se quedó sin agua y consultar los avisos |
 
 > La aplicación tiene un único perfil: no hay cuentas ni roles, y cada teléfono guarda los datos de un hogar.
 
@@ -270,14 +275,16 @@ flowchart LR
         EC(["Estimar consumo"])
         CU05(["CU-05 Consultar qué recortar"])
         CU06(["CU-06 Declarar que se quedó sin agua"])
+        CU07(["CU-07 Consultar avisos"])
     end
 
-    JH --> CU01 & CU02 & CU03 & CU04 & CU05 & CU06
+    JH --> CU01 & CU02 & CU03 & CU04 & CU05 & CU06 & CU07
 
     CU04 -. "«include»" .-> CD
     CU04 -. "«include»" .-> EC
     CU05 -. "«extend»" .-> CU04
     CU06 -. "«include»" .-> EC
+    CU07 -. "«include»" .-> CD
 ```
 
 #### c) Escenarios de Caso de Uso (narrativa)
@@ -328,6 +335,14 @@ flowchart LR
 | **Flujo alternativo** | Si la hora tiene formato inválido, es futura o es anterior al último llenado, se muestra el error debajo del campo. |
 | **Postcondición** | El depósito queda en cero desde ese momento y el consumo aprendido se usa en las siguientes proyecciones. |
 
+| CU-07 | Consultar avisos |
+|---|---|
+| **Actor** | Jefe de hogar |
+| **Precondición** | El hogar está configurado. |
+| **Flujo principal** | 1) Desde Mi depósito, el usuario toca "Ver avisos". 2) El sistema obtiene el perfil y el depósito y calcula el próximo llenado, el déficit y el nivel actual. 3) Muestra los avisos que correspondan (RN-11). 4) El usuario toca un aviso. 5) El sistema navega a la pantalla que lo resuelve: Qué recortar (déficit), Registrar llenado completo (sin llenado) o Mi depósito (nivel bajo). |
+| **Flujo alternativo** | Si no hay avisos, se muestra "No tienes avisos" y que el depósito alcanza hasta el próximo llenado. |
+| **Postcondición** | El usuario conoce las alertas de su depósito y la acción para atenderlas. |
+
 ### 5.3. Modelo Lógico
 
 #### a) Análisis de Objetos
@@ -343,7 +358,7 @@ flowchart LR
     PANT[/"⊢○ Pantallas (Compose)"/]
     VM(("⟳ ViewModels"))
     REP(("⟳ Repositorio del depósito"))
-    EST(("⟳ Estimar consumo / Calcular déficit / Recortes"))
+    EST(("⟳ Estimar consumo / Calcular déficit / Recortes / Avisos"))
     US[("Usuario")]
     PH[("Perfil del hogar")]
     LL[("Evento de llenado")]
@@ -479,6 +494,18 @@ classDiagram
         descripcion
         litrosQueAhorra
     }
+    class AvisoVista {
+        tipo
+        titulo
+        texto
+        destino
+    }
+    class TipoDeAviso {
+        <<enumeration>>
+        DEFICIT
+        NIVEL_BAJO
+        SIN_LLENADO
+    }
 
     PerfilHogar "1" *-- "1" ConfiguracionHogar
     ConfiguracionHogar "1" *-- "1" HabitosDelHogar
@@ -487,11 +514,15 @@ classDiagram
     Deposito ..> NivelDeposito : calcula
     Deposito ..> IntervaloConsumo : aprende de
     Recomendacion ..> HabitosDelHogar : corresponde a
+    AvisoVista --> TipoDeAviso
+    AvisoVista ..> Deposito : se arma con
 ```
+
+> `AvisoVista` y `TipoDeAviso` pertenecen a la capa de presentación (`AvisosViewModel`): los avisos se derivan del `Deposito` y no se guardan en la base de datos.
 
 ## 6. Conclusiones
 
-- La especificación definió las funcionalidades de AguardApp mediante 8 requerimientos funcionales, 7 no funcionales y 10 reglas de negocio, centrados en la gestión del depósito domiciliario de agua.
+- La especificación definió las funcionalidades de AguardApp mediante 9 requerimientos funcionales, 7 no funcionales y 11 reglas de negocio, centrados en la gestión del depósito domiciliario de agua.
 - La reducción del alcance a un solo módulo (Depósito) permite entregar una solución completa, simple y que funciona sin conexión ni cuentas de usuario.
 - El modelado de procesos evidencia la mejora frente al proceso manual: el hogar sabe cuánta agua le queda, hasta cuándo le alcanza y cuántos litros le faltarán antes del próximo llenado.
 - Los diagramas de paquetes, casos de uso, actividades, secuencia y clases reflejan la arquitectura MVVM + DDD implementada en el código.
@@ -501,7 +532,7 @@ classDiagram
 - Validar las reglas de estimación del consumo (RN-03 a RN-07) con hogares piloto y ajustar sus parámetros.
 - Agregar pruebas unitarias para la capa de dominio, que es Kotlin puro y no depende de Android.
 - Mantener la trazabilidad entre requerimientos, casos de uso y pruebas en las próximas versiones.
-- Evaluar en versiones futuras los módulos que quedaron fuera del alcance (sector, notificaciones, sincronización) sin perder el funcionamiento sin conexión.
+- Evaluar en versiones futuras los módulos que quedaron fuera del alcance (sector, notificaciones push a partir de los avisos actuales, sincronización) sin perder el funcionamiento sin conexión.
 
 ## 8. Bibliografía
 
