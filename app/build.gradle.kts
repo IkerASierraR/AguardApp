@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.androidx.room)
 }
@@ -59,6 +58,7 @@ dependencies {
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.navigation.compose)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     // Datos locales y tareas en segundo plano
@@ -67,19 +67,9 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.work.runtime)
     implementation(libs.kotlinx.datetime)
-    implementation(libs.kotlinx.serialization.json)
 
     // Inyección de dependencias
     implementation(libs.koin.core)
-
-    // Nube (Supabase) e inicio de sesión con Google
-    implementation(libs.supabase.auth)
-    implementation(libs.supabase.postgrest)
-    implementation(libs.ktor.client.okhttp)
-    implementation(libs.multiplatform.settings)
-    implementation(libs.androidx.credentials)
-    implementation(libs.androidx.credentials.play.services)
-    implementation(libs.googleid)
 
     testImplementation(libs.junit)
 }

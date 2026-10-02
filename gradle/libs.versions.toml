@@ -9,14 +9,9 @@ activityCompose = "1.13.0"
 composeBom = "2026.02.01"
 koin = "4.2.2"
 kotlinxDatetime = "0.8.0"
-kotlinxSerialization = "1.9.0"
 room = "2.8.5"
 work = "2.11.2"
-supabase = "3.8.0"
-ktor = "3.5.1"
-credentials = "1.5.0"
-googleid = "1.2.1"
-multiplatformSettings = "1.3.0"
+navigation = "2.9.7"
 
 [libraries]
 # Android y Compose
@@ -33,6 +28,7 @@ androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "u
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
 
 # Datos locales y tareas en segundo plano
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
@@ -40,19 +36,9 @@ androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = 
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-work-runtime = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 
 # Inyección de dependencias
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
-
-# Nube (Supabase) e inicio de sesión con Google
-supabase-auth = { group = "io.github.jan-tennert.supabase", name = "auth-kt", version.ref = "supabase" }
-supabase-postgrest = { group = "io.github.jan-tennert.supabase", name = "postgrest-kt", version.ref = "supabase" }
-ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
-multiplatform-settings = { group = "com.russhwolf", name = "multiplatform-settings", version.ref = "multiplatformSettings" }
-androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
-androidx-credentials-play-services = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
-googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
 
 # Pruebas
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -60,6 +46,5 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 androidx-room = { id = "androidx.room", version.ref = "room" }

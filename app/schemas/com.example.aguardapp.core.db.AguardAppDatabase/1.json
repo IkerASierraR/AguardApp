@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "d28d0d87e19233231a6f359d52aeb87a",
+    "identityHash": "cfa7dabf8a933bd528ede7218a55c174",
     "entities": [
       {
         "tableName": "usuario",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `googleSub` TEXT, `authProviderId` TEXT, `modoAcceso` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `bienvenidaCompletada` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -15,19 +15,10 @@
             "notNull": true
           },
           {
-            "fieldPath": "googleSub",
-            "columnName": "googleSub",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "authProviderId",
-            "columnName": "authProviderId",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "modoAcceso",
-            "columnName": "modoAcceso",
-            "affinity": "TEXT"
+            "fieldPath": "bienvenidaCompletada",
+            "columnName": "bienvenidaCompletada",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -139,7 +130,7 @@
       },
       {
         "tableName": "novedad_deposito",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `usuarioId` TEXT NOT NULL, `momento` TEXT NOT NULL, `tipo` TEXT NOT NULL, `inicioObservado` TEXT, `litrosObservados` REAL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `usuarioId` TEXT NOT NULL, `momento` TEXT NOT NULL, `inicioObservado` TEXT NOT NULL, `litrosObservados` REAL NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -160,20 +151,16 @@
             "notNull": true
           },
           {
-            "fieldPath": "tipo",
-            "columnName": "tipo",
+            "fieldPath": "inicioObservado",
+            "columnName": "inicioObservado",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "inicioObservado",
-            "columnName": "inicioObservado",
-            "affinity": "TEXT"
-          },
-          {
             "fieldPath": "litrosObservados",
             "columnName": "litrosObservados",
-            "affinity": "REAL"
+            "affinity": "REAL",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -246,7 +233,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd28d0d87e19233231a6f359d52aeb87a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cfa7dabf8a933bd528ede7218a55c174')"
     ]
   }
 }

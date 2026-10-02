@@ -12,8 +12,9 @@ data class Deposito(
     val llenado: EventoLlenado,
     val agotadoEn: LocalDateTime? = null
 ) {
+    /** Lo que quedó en el tanque al llenarlo; nunca más que su capacidad. */
     val nivelTrasLlenado: NivelDeposito
-        get() = NivelDeposito.trasLlenado(capacidad, llenado.tipo)
+        get() = NivelDeposito(minOf(llenado.litros, capacidad.litros), capacidad)
 
     /** El nivel baja de forma lineal y nunca es menor que cero. */
     fun nivelEn(momento: LocalDateTime): NivelDeposito {

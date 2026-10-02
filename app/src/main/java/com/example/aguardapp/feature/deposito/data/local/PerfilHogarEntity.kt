@@ -13,6 +13,8 @@ data class PerfilHogarEntity(
     val duchasPorDia: Int,
     val usaLavadora: Boolean,
     val riegaJardin: Boolean,
+    // Hora del próximo llenado en formato "HH:mm".
+    val horaProximoLlenado: String,
     val consumoPorHabitosLitrosHora: Double?,
     val consumoVigenteLitrosHora: Double?
 )

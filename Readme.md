@@ -13,7 +13,6 @@
   <img src="https://img.shields.io/badge/Jetpack_Compose-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white" alt="Jetpack Compose"/>
   <img src="https://img.shields.io/badge/Android-34A853?style=for-the-badge&logo=android&logoColor=white" alt="Android"/>
   <img src="https://img.shields.io/badge/Room-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="Room"/>
-  <img src="https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase"/>
   <img src="https://img.shields.io/badge/Koin-F5A623?style=for-the-badge&logo=koin&logoColor=white" alt="Koin"/>
 </p>
 
@@ -78,7 +77,7 @@ flowchart TD
 | 💧 **Registrar llenados** | Un toque cuando llega el agua (completo o a la mitad) |
 | 📉 **Aprender el consumo** | Ajusta la proyección cuando el agua se acaba antes de lo previsto |
 | 🔔 **Avisos proactivos** | Notificaciones antes del agotamiento |
-| 📡 **Offline-first** | Funciona sin internet, sincroniza al recuperar la red |
+| 📡 **100 % local** | Funciona sin internet: todo se guarda en el teléfono (SQLite) |
 
 ---
 
@@ -113,11 +112,9 @@ Según el Informe de Factibilidad **(FD01, Versión 1.0)**, el proyecto es viabl
 | **Lenguaje** | ![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=flat-square&logo=kotlin&logoColor=white) |
 | **UI** | ![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose-4285F4?style=flat-square&logo=jetpackcompose&logoColor=white) ![Material 3](https://img.shields.io/badge/Material_3-757575?style=flat-square&logo=materialdesign&logoColor=white) |
 | **Base de datos** | ![Room](https://img.shields.io/badge/Room_(SQLite)-003B57?style=flat-square&logo=sqlite&logoColor=white) |
-| **Backend/Nube** | ![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=flat-square&logo=supabase&logoColor=white) ![Ktor](https://img.shields.io/badge/Ktor-087CFA?style=flat-square&logo=ktor&logoColor=white) |
 | **DI** | ![Koin](https://img.shields.io/badge/Koin-F5A623?style=flat-square) |
-| **Autenticación** | ![Google Sign-In](https://img.shields.io/badge/Google_Sign--In-4285F4?style=flat-square&logo=google&logoColor=white) |
 | **Tareas** | ![WorkManager](https://img.shields.io/badge/WorkManager-34A853?style=flat-square&logo=android&logoColor=white) |
-| **Serialización** | ![kotlinx.serialization](https://img.shields.io/badge/kotlinx.serialization-7F52FF?style=flat-square) ![kotlinx.datetime](https://img.shields.io/badge/kotlinx.datetime-7F52FF?style=flat-square) |
+| **Fechas** | ![kotlinx.datetime](https://img.shields.io/badge/kotlinx.datetime-7F52FF?style=flat-square) |
 | **Arquitectura** | ![MVVM](https://img.shields.io/badge/MVVM-purple?style=flat-square) ![DDD](https://img.shields.io/badge/DDD-darkblue?style=flat-square) ![Clean Architecture](https://img.shields.io/badge/Clean_Architecture-teal?style=flat-square) |
 
 ---
@@ -138,31 +135,26 @@ AguardApp/
 │       ├── 📁 res/                        Recursos (iconos, strings, etc.)
 │       └── 📁 java/com/example/aguardapp/
 │           ├── 📄 AguardApplication.kt    Inicia DB, Koin y tarea horaria
-│           ├── 📄 MainActivity.kt         Permisos y sincronización
+│           ├── 📄 MainActivity.kt         Permiso de avisos
 │           ├── 📄 App.kt                  Tema + acceso + depósito
 │           │
 │           ├── 📁 core/                   🔧 Infraestructura transversal
 │           │   ├── 📁 data/               Usuario local (UUID) y DAO
 │           │   ├── 📁 db/                 AguardAppDatabase (Room)
 │           │   ├── 📁 di/                 Módulos de Koin
-│           │   ├── 📁 nube/               Cliente de Supabase
-│           │   ├── 📁 sesion/             Modo de acceso y Google Sign-In
 │           │   ├── 📁 ui/theme/           Colores, tipografías y tema
 │           │   └── 📁 util/               Reloj y UUID
 │           │
 │           └── 📁 feature/               📦 Features (cada uno con DDD)
-│               ├── 📁 bienvenida/         Pantalla de entrada
+│               ├── 📁 bienvenida/         Pantalla de entrada (solo el primer uso)
 │               └── 📁 deposito/           Depósito de agua del hogar
 │
-├── 📁 informes/                           📋 Documentación académica
-│   ├── 📄 FD01-Factibilidad.md
-│   ├── 📄 FD02-Vision.md
-│   ├── 📄 FD03-SRS.md
-│   ├── 📄 FD04-SAD.md
-│   └── 📄 FD05-Informe-Final.md
-│
-└── 📁 supabase/
-    └── 📁 migrations/                     Tablas y políticas de la nube
+└── 📁 informes/                           📋 Documentación académica
+    ├── 📄 FD01-Factibilidad.md
+    ├── 📄 FD02-Vision.md
+    ├── 📄 FD03-SRS.md
+    ├── 📄 FD04-SAD.md
+    └── 📄 FD05-Informe-Final.md
 ```
 
 ### Capas internas de cada Feature
@@ -172,7 +164,7 @@ Cada feature sigue el patrón **MVVM + DDD** con estas capas:
 | Capa | Contenido | Depende de |
 |---|---|---|
 | 📐 `domain/` | `model/`, `repository/` (interfaces), `usecase/` — Kotlin puro | Nada |
-| 💾 `data/` | Implementaciones de repositorios, `local/` (Room), `sync/` (Supabase), `mapper/` | `domain/` |
+| 💾 `data/` | Implementaciones de repositorios, `local/` (Room), `mapper/` | `domain/` |
 | ⚙️ `infrastructure/` | Adaptadores Android: notificaciones y WorkManager | `domain/` |
 | 🔌 `di/` | Módulo de Koin de la feature | Todas |
 | 🖼️ `presentation/` | `*Screen`, `*ViewModel`, `*UiState` (MVVM), `componentes/` | `domain/` |
@@ -189,12 +181,10 @@ C4Context
 
     System(app, "AguardApp", "App Android que gestiona el depósito de agua del hogar y emite avisos")
 
-    System_Ext(supabase, "Supabase", "Backend como servicio: autenticación, Postgrest y almacenamiento en la nube")
-    System_Ext(google, "Google Services", "Autenticación con Google Sign-In")
+    System_Ext(android, "Android", "Notificaciones y tareas en segundo plano (WorkManager)")
 
     Rel(user, app, "Usa", "Android")
-    Rel(app, supabase, "Sincroniza datos", "HTTPS/TLS")
-    Rel(app, google, "Autenticación", "SDK")
+    Rel(app, android, "Programa avisos", "SDK")
 ```
 
 ## 🏗️ Diagrama C4 — Nivel de Contenedores
@@ -208,21 +198,17 @@ C4Container
     Container_Boundary(mobile, "App Android") {
         Container(ui, "Presentation Layer", "Jetpack Compose", "Screens, ViewModels y UiStates con MVVM")
         Container(domain, "Domain Layer", "Kotlin puro", "Models, UseCases y Repositories (interfaces)")
-        Container(data, "Data Layer", "Room + Ktor", "Implementación de repositorios, DAOs, Entities y sincronización")
+        Container(data, "Data Layer", "Room", "Implementación de repositorios, DAOs y Entities")
         Container(infra, "Infrastructure", "WorkManager", "Notificaciones y tareas en segundo plano")
         ContainerDb(roomdb, "Room Database", "SQLite", "Fuente de verdad local: perfil del hogar, llenados y avisos")
     }
 
-    System_Ext(supabase, "Supabase", "PostgreSQL + Auth + RLS")
-    System_Ext(google, "Google Services", "Sign-In")
 
     Rel(user, ui, "Interactúa")
     Rel(ui, domain, "Usa UseCases")
     Rel(data, domain, "Implementa interfaces")
     Rel(infra, domain, "Implementa interfaces")
     Rel(data, roomdb, "Lee/Escribe")
-    Rel(data, supabase, "Sincroniza", "HTTPS")
-    Rel(ui, google, "Inicia sesión")
 ```
 
 ## 🏗️ Diagrama C4 — Nivel de Componentes (Feature Depósito)
@@ -257,7 +243,7 @@ C4Component
 classDiagram
     class Usuario {
         id
-        modoAcceso
+        bienvenidaCompletada
     }
     class PerfilHogar {
         tipoReservorio
@@ -316,7 +302,7 @@ git clone https://github.com/tu-usuario/AguardApp.git
 |---|---|:-:|
 | RF-04 | Configurar perfil del hogar | 🔴 Alta |
 | RF-06 | Calcular depósito y agotamiento | 🔴 Alta |
-| RF-11 | Operar sin conexión y sincronizar | 🔴 Alta |
+| RF-11 | Operar sin conexión | 🔴 Alta |
 
 > 📄 Ver documentación completa en [`informes/FD03-SRS.md`](./informes/FD03-SRS.md)
 

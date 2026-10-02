@@ -22,9 +22,6 @@ interface DepositoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun guardarLlenado(llenado: EventoLlenadoEntity)
 
-    @Query("DELETE FROM evento_llenado WHERE usuarioId = :usuarioId")
-    suspend fun borrarLlenados(usuarioId: String)
-
     @Query("SELECT * FROM novedad_deposito WHERE usuarioId = :usuarioId ORDER BY momento")
     fun observarNovedades(usuarioId: String): Flow<List<NovedadDepositoEntity>>
 

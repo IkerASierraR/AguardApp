@@ -9,10 +9,4 @@ data class NivelDeposito(
     }
 
     val porcentaje: Double get() = litros / capacidad.litros * 100
-
-    companion object {
-        // "Llenó a la mitad" deja el tanque al 50 %; no suma al nivel anterior.
-        fun trasLlenado(capacidad: CapacidadLitros, tipo: TipoLlenado): NivelDeposito =
-            NivelDeposito(capacidad.litros * tipo.fraccion, capacidad)
-    }
 }

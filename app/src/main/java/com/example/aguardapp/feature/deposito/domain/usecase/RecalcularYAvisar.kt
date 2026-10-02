@@ -7,21 +7,25 @@ import com.example.aguardapp.feature.deposito.domain.repository.DepositoReposito
 import com.example.aguardapp.feature.deposito.domain.repository.Notificador
 import com.example.aguardapp.feature.deposito.domain.repository.RegistroDeAvisos
 
-/** Lo que hace la tarea horaria: recalcula la proyección y, si corresponde y no se avisó ya, avisa. */
+/** Lo que hace la tarea horaria: revisa el depósito y avisa lo que corresponda y no se haya avisado ya. */
 class RecalcularYAvisar(
     private val repositorio: DepositoRepository,
     private val registro: RegistroDeAvisos,
     private val notificador: Notificador,
-    private val evaluar: EvaluarAvisos = EvaluarAvisos()
+    private val evaluar: EvaluarAvisos = EvaluarAvisos(),
+    private val calcularProximoLlenado: CalcularProximoLlenado = CalcularProximoLlenado()
 ) {
-    /** Devuelve el aviso mostrado, o `null` si no había nada que avisar. */
-    suspend operator fun invoke(ahora: LocalDateTime): Aviso? {
+    /** Devuelve los avisos nuevos que se mostraron. */
+    suspend operator fun invoke(ahora: LocalDateTime): List<Aviso> {
+        val perfil = repositorio.observarPerfil().first() ?: return emptyList()
         val deposito = repositorio.observarDeposito().first()
-        val aviso = evaluar(deposito, ahora) ?: return null
-        if (registro.yaSeAviso(aviso.clave)) return null
-        // Primero se guarda: aunque el usuario no haya dado permiso de notificaciones, el aviso queda en su lista.
-        registro.registrar(aviso, ahora)
-        notificador.mostrar(aviso)
-        return aviso
+        val proximoLlenado = calcularProximoLlenado(perfil.horaProximoLlenado, ahora)
+        val nuevos = evaluar(deposito, proximoLlenado, ahora).filter { !registro.yaSeAviso(it.clave) }
+        nuevos.forEach { aviso ->
+            // Primero se guarda: aunque no haya permiso de notificaciones, el aviso queda en la lista.
+            registro.registrar(aviso, ahora)
+            notificador.mostrar(aviso)
+        }
+        return nuevos
     }
 }

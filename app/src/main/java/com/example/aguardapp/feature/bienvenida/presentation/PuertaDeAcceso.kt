@@ -5,21 +5,19 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 
-/** El primer uso: la bienvenida hasta que la persona elige cómo entrar, y después la app. */
+/** El primer uso: la bienvenida hasta que la persona acepta y empieza, y después la app. */
 @Composable
 fun PuertaDeAcceso(
-    viewModel: AccesoViewModel = viewModel { AccesoViewModel.desdeInyeccion() },
+    viewModel: BienvenidaViewModel = viewModel { BienvenidaViewModel.desdeInyeccion() },
     contenido: @Composable () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     when {
         uiState.cargando -> Unit
-        uiState.modo == null -> BienvenidaScreen(
+        !uiState.completada -> BienvenidaScreen(
             uiState = uiState,
             onAlternarConsentimiento = viewModel::alternarConsentimiento,
-            onSinCuenta = viewModel::empezarSinCuenta,
-            onGoogle = viewModel::entrarConGoogle,
-            onDescartarMensaje = viewModel::descartarMensaje
+            onEmpezar = viewModel::empezar
         )
         else -> contenido()
     }

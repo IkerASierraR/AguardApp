@@ -1,5 +1,7 @@
 package com.example.aguardapp.feature.deposito.domain.model
 
+import kotlinx.datetime.LocalTime
+
 enum class TipoReservorio { TANQUE_ELEVADO, CISTERNA, BIDONES }
 
 data class HabitosDelHogar(
@@ -19,9 +21,10 @@ data class PerfilHogar(
     val capacidad: CapacidadLitros,
     val habitantes: Habitantes,
     val habitos: HabitosDelHogar,
+    val horaProximoLlenado: LocalTime,
     val consumoPorHabitos: ConsumoHorario? = null,
     val consumoVigente: ConsumoHorario? = null
 ) {
     val configuracion: ConfiguracionHogar
-        get() = ConfiguracionHogar(tipoReservorio, capacidad, habitantes, habitos)
+        get() = ConfiguracionHogar(tipoReservorio, capacidad, habitantes, habitos, horaProximoLlenado)
 }

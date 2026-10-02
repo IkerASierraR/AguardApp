@@ -4,11 +4,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDateTime
 import com.example.aguardapp.feature.deposito.domain.model.ConfiguracionHogar
 import com.example.aguardapp.feature.deposito.domain.model.ConsumoHorario
+import com.example.aguardapp.feature.deposito.domain.model.Deposito
+import com.example.aguardapp.feature.deposito.domain.model.Litros
 import com.example.aguardapp.feature.deposito.domain.model.LitrosPorHabitanteDia
 import com.example.aguardapp.feature.deposito.domain.model.PerfilHogar
 import com.example.aguardapp.feature.deposito.domain.model.PrevisualizacionSinAgua
-import com.example.aguardapp.feature.deposito.domain.model.Deposito
-import com.example.aguardapp.feature.deposito.domain.model.TipoLlenado
 
 interface DepositoRepository {
 
@@ -24,7 +24,8 @@ interface DepositoRepository {
     /** Promedio diario por persona; `null` si aún no hay datos suficientes. */
     suspend fun litrosPorHabitanteDia(): LitrosPorHabitanteDia?
 
-    suspend fun registrarLlenado(momento: LocalDateTime, tipo: TipoLlenado): Result<Unit>
+    /** Guarda un llenado: el tanque quedó con `litros` en `momento`. */
+    suspend fun registrarLlenado(momento: LocalDateTime, litros: Litros): Result<Unit>
 
     suspend fun declararSinAgua(momento: LocalDateTime): Result<Unit>
 

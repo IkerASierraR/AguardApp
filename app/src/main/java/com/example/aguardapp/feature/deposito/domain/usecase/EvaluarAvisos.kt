@@ -3,21 +3,26 @@ package com.example.aguardapp.feature.deposito.domain.usecase
 import kotlinx.datetime.LocalDateTime
 import com.example.aguardapp.feature.deposito.domain.model.Aviso
 import com.example.aguardapp.feature.deposito.domain.model.Deposito
-import com.example.aguardapp.feature.deposito.domain.model.horasEntre
+import kotlin.math.roundToInt
 
-class EvaluarAvisos {
+class EvaluarAvisos(private val calcularDeficit: CalcularDeficit = CalcularDeficit()) {
 
-    /** Avisa cuando el agua se acabará dentro de las próximas horas; si ya se acabó, el aviso llegaría tarde. */
-    operator fun invoke(deposito: Deposito?, ahora: LocalDateTime): Aviso? {
-        if (deposito == null) return null
-        val agotamiento = deposito.agotamientoProyectado()
-        val horasQueQuedan = horasEntre(ahora, agotamiento)
-        if (horasQueQuedan <= 0.0 || horasQueQuedan > HORAS_DE_ANTICIPACION) return null
-        return Aviso(agotamiento)
+    /** Los avisos que corresponden al estado actual del depósito. */
+    operator fun invoke(deposito: Deposito?, proximoLlenado: LocalDateTime, ahora: LocalDateTime): List<Aviso> {
+        if (deposito == null) return emptyList()
+        val avisos = mutableListOf<Aviso>()
+        val porcentaje = deposito.nivelEn(ahora).porcentaje.roundToInt()
+        if (porcentaje < PORCENTAJE_NIVEL_BAJO) {
+            avisos.add(Aviso.NivelBajo(porcentaje, deposito.llenado.momento))
+        }
+        val deficit = calcularDeficit(deposito, proximoLlenado, ahora)
+        if (deficit > 0) {
+            avisos.add(Aviso.FaltaAgua(deficit, proximoLlenado))
+        }
+        return avisos
     }
 
     private companion object {
-        // Valor inicial: margen para guardar agua o conseguir más antes de quedarse sin nada.
-        const val HORAS_DE_ANTICIPACION = 6.0
+        const val PORCENTAJE_NIVEL_BAJO = 20
     }
 }

@@ -15,9 +15,9 @@ interface UsuarioDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun guardar(usuario: UsuarioEntity)
 
-    @Query("SELECT modoAcceso FROM usuario LIMIT 1")
-    fun observarModoDeAcceso(): Flow<String?>
+    @Query("SELECT bienvenidaCompletada FROM usuario LIMIT 1")
+    fun observarBienvenidaCompletada(): Flow<Boolean?>
 
-    @Query("UPDATE usuario SET modoAcceso = :modo")
-    suspend fun guardarModoDeAcceso(modo: String)
+    @Query("UPDATE usuario SET bienvenidaCompletada = 1")
+    suspend fun completarBienvenida()
 }

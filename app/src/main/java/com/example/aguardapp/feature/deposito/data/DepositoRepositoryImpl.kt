@@ -19,7 +19,7 @@ import com.example.aguardapp.feature.deposito.domain.model.LitrosPorHabitanteDia
 import com.example.aguardapp.feature.deposito.domain.model.PerfilHogar
 import com.example.aguardapp.feature.deposito.domain.model.PrevisualizacionSinAgua
 import com.example.aguardapp.feature.deposito.domain.model.Deposito
-import com.example.aguardapp.feature.deposito.domain.model.TipoLlenado
+import com.example.aguardapp.feature.deposito.domain.model.Litros
 import com.example.aguardapp.feature.deposito.domain.repository.DepositoRepository
 import com.example.aguardapp.feature.deposito.domain.usecase.ArmarDeposito
 import com.example.aguardapp.feature.deposito.domain.usecase.CalcularLitrosPorHabitanteDia
@@ -45,7 +45,7 @@ class DepositoRepositoryImpl(
         runCatching {
             val perfil = PerfilHogar(
                 usuarioId, configuracion.tipoReservorio, configuracion.capacidad,
-                configuracion.habitantes, configuracion.habitos, consumoPorHabitos
+                configuracion.habitantes, configuracion.habitos, configuracion.horaProximoLlenado, consumoPorHabitos
             )
             dao.guardarPerfil(perfil.aEntidad())
         }
@@ -64,11 +64,12 @@ class DepositoRepositoryImpl(
         return CalcularLitrosPorHabitanteDia()(estado.historial.intervalos(estado.hogar), estado.hogar.habitantes)
     }
 
-    override suspend fun registrarLlenado(momento: LocalDateTime, tipo: TipoLlenado): Result<Unit> =
+    override suspend fun registrarLlenado(momento: LocalDateTime, litros: Litros): Result<Unit> =
         runCatching {
             require(momento <= ahora()) { "No se puede registrar un llenado en el futuro" }
             val estado = requireNotNull(cargarEstado()) { SIN_PERFIL }
-            dao.guardarLlenado(EventoLlenado(momento, tipo).aEntidad(nuevoId(), usuarioId))
+            require(litros > Litros.CERO && litros <= estado.perfil.capacidad.litros) { "Los litros deben ser mayores que 0 y no superar la capacidad" }
+            dao.guardarLlenado(EventoLlenado(momento, litros).aEntidad(nuevoId(), usuarioId))
             dao.guardarPerfil(estado.perfil.copy(consumoVigente = null).aEntidad())
         }
 

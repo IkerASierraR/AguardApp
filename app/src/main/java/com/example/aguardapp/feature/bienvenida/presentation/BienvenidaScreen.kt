@@ -40,7 +40,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.aguardapp.R
@@ -49,21 +48,18 @@ import com.example.aguardapp.core.ui.theme.Agua
 import com.example.aguardapp.core.ui.theme.AguaMedia
 import com.example.aguardapp.core.ui.theme.AguaProfunda
 import com.example.aguardapp.core.ui.theme.Blanco
-import com.example.aguardapp.core.ui.theme.Coral
 import com.example.aguardapp.core.ui.theme.FuenteTexto
 import com.example.aguardapp.core.ui.theme.IconosClarosEnBarraDeEstado
 
 private val RADIO = RoundedCornerShape(16.dp)
 private val SOMBRA_DEL_BOTON = Color(0x38001A1F)
 
-/** Pantalla 01 del Figma: presenta la app y deja elegir entre empezar sin cuenta o entrar con Google. */
+/** Pantalla 01 del Figma: presenta la app y pide aceptar que los datos se guarden en el teléfono. */
 @Composable
 fun BienvenidaScreen(
-    uiState: AccesoUiState,
+    uiState: BienvenidaUiState,
     onAlternarConsentimiento: () -> Unit,
-    onSinCuenta: () -> Unit,
-    onGoogle: () -> Unit,
-    onDescartarMensaje: () -> Unit
+    onEmpezar: () -> Unit
 ) {
     IconosClarosEnBarraDeEstado(claros = true)
     Box(Modifier.fillMaxSize().background(Brush.linearGradient(listOf(AguaProfunda, AguaMedia, Agua)))) {
@@ -71,7 +67,7 @@ fun BienvenidaScreen(
         Circulo(380, Modifier.offset(x = (-150).dp, y = 520.dp))
         Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
             Presentacion(Modifier.weight(1f))
-            Acciones(uiState, onAlternarConsentimiento, onSinCuenta, onGoogle, onDescartarMensaje)
+            Acciones(uiState, onAlternarConsentimiento, onEmpezar)
         }
     }
 }
@@ -137,45 +133,17 @@ private fun Beneficio(icono: ImageVector, titulo: String, detalle: String) {
 }
 
 @Composable
-private fun Acciones(
-    uiState: AccesoUiState,
-    onAlternarConsentimiento: () -> Unit,
-    onSinCuenta: () -> Unit,
-    onGoogle: () -> Unit,
-    onDescartarMensaje: () -> Unit
-) {
-    val opacidad = if (uiState.puedeEntrar) 1f else 0.5f
+private fun Acciones(uiState: BienvenidaUiState, onAlternarConsentimiento: () -> Unit, onEmpezar: () -> Unit) {
     Column(Modifier.padding(start = 24.dp, end = 24.dp, bottom = 12.dp)) {
         Consentimiento(uiState.consentimiento, onAlternarConsentimiento)
         Spacer(Modifier.height(20.dp))
-        uiState.mensaje?.let { Mensaje(it, onDescartarMensaje) }
         Box(
-            Modifier.fillMaxWidth().height(54.dp).alpha(opacidad)
+            Modifier.fillMaxWidth().height(54.dp).alpha(if (uiState.consentimiento) 1f else 0.5f)
                 .shadow(8.dp, RADIO, ambientColor = SOMBRA_DEL_BOTON, spotColor = SOMBRA_DEL_BOTON)
                 .clip(RADIO).background(Blanco)
-                .clickable(enabled = uiState.puedeEntrar, role = Role.Button, onClick = onSinCuenta),
+                .clickable(enabled = uiState.consentimiento, role = Role.Button, onClick = onEmpezar),
             contentAlignment = Alignment.Center
-        ) { Text("Empezar sin cuenta", fontFamily = FuenteTexto, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = AguaMedia) }
-        Spacer(Modifier.height(10.dp))
-        Row(
-            Modifier.fillMaxWidth().height(50.dp).alpha(opacidad).clip(RADIO)
-                .border(1.5.dp, Blanco.copy(alpha = 0.45f), RADIO)
-                .clickable(enabled = uiState.puedeEntrar, role = Role.Button, onClick = onGoogle),
-            horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("G", fontFamily = FuenteTexto, fontSize = 19.sp, fontWeight = FontWeight.ExtraBold, color = Blanco)
-            Text(
-                if (uiState.enCurso) "Conectando…" else "Entrar con Google",
-                fontFamily = FuenteTexto, fontSize = 14.5.sp, fontWeight = FontWeight.Bold, color = Blanco
-            )
-        }
-        Spacer(Modifier.height(12.dp))
-        Text(
-            "La cuenta solo hace falta para el ranking, los reportes y sincronizar entre dispositivos.",
-            Modifier.fillMaxWidth(), fontFamily = FuenteTexto, fontSize = 10.sp, lineHeight = 14.sp,
-            fontWeight = FontWeight.Medium, textAlign = TextAlign.Center, color = Blanco.copy(alpha = 0.55f)
-        )
+        ) { Text("Empezar", fontFamily = FuenteTexto, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = AguaMedia) }
     }
 }
 
@@ -199,14 +167,4 @@ private fun Consentimiento(marcado: Boolean, onAlternar: () -> Unit) {
             fontFamily = FuenteTexto, fontSize = 11.5.sp, lineHeight = 17.sp, fontWeight = FontWeight.Medium, color = Blanco.copy(alpha = 0.8f)
         )
     }
-}
-
-@Composable
-private fun Mensaje(texto: String, onDescartar: () -> Unit) {
-    Text(
-        texto,
-        Modifier.fillMaxWidth().padding(bottom = 10.dp).clip(RoundedCornerShape(12.dp)).background(Coral.copy(alpha = 0.9f))
-            .clickable(role = Role.Button, onClick = onDescartar).padding(horizontal = 14.dp, vertical = 10.dp),
-        fontFamily = FuenteTexto, fontSize = 12.sp, lineHeight = 17.sp, fontWeight = FontWeight.Medium, color = Blanco
-    )
 }

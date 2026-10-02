@@ -3,18 +3,13 @@ package com.example.aguardapp.feature.deposito.data.local
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-// SIN_AGUA: el usuario se quedó sin agua. `inicioObservado` y `litrosObservados` guardan
-// el intervalo que se aprendió (pueden venir nulos en registros antiguos de la nube).
+// Cada vez que el usuario declaró que se quedó sin agua. `inicioObservado` y `litrosObservados`
+// guardan el intervalo de consumo que se aprendió de esa declaración.
 @Entity(tableName = "novedad_deposito")
 data class NovedadDepositoEntity(
     @PrimaryKey val id: String,
     val usuarioId: String,
     val momento: String,
-    val tipo: String,
-    val inicioObservado: String? = null,
-    val litrosObservados: Double? = null
-) {
-    companion object {
-        const val SIN_AGUA = "SIN_AGUA"
-    }
-}
+    val inicioObservado: String,
+    val litrosObservados: Double
+)

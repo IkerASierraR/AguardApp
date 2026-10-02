@@ -4,7 +4,6 @@ import com.example.aguardapp.feature.deposito.domain.model.CapacidadLitros
 import com.example.aguardapp.feature.deposito.domain.model.ClaseIntervalo
 import com.example.aguardapp.feature.deposito.domain.model.EventoLlenado
 import com.example.aguardapp.feature.deposito.domain.model.IntervaloConsumo
-import com.example.aguardapp.feature.deposito.domain.model.NivelDeposito
 
 /** Convierte cada par de llenados reales consecutivos en un intervalo de consumo. */
 class ConstruirIntervalos {
@@ -18,7 +17,7 @@ class ConstruirIntervalos {
                 IntervaloConsumo(
                     inicio = antes.momento,
                     fin = despues.momento,
-                    litrosConsumidos = NivelDeposito.trasLlenado(capacidad, antes.tipo).litros,
+                    litrosConsumidos = minOf(antes.litros, capacidad.litros),
                     clase = ClaseIntervalo.POR_LLENADO
                 )
             }
