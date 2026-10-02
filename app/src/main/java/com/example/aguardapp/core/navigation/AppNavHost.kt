@@ -14,6 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.aguardapp.feature.bienvenida.presentation.BienvenidaScreen
+import com.example.aguardapp.feature.deposito.presentation.AvisosScreen
 import com.example.aguardapp.feature.deposito.presentation.ConfiguracionScreen
 import com.example.aguardapp.feature.deposito.presentation.DepositoScreen
 import com.example.aguardapp.feature.deposito.presentation.QueRecortarScreen
@@ -48,6 +49,7 @@ fun AppNavHost(rutaInicial: String, hayConfiguracion: Boolean) {
                     onRegistrarLlenado = { tipo -> navController.navigate(Rutas.registrarLlenado(tipo.ruta)) },
                     onQueRecortar = { deficit -> navController.navigate(Rutas.queRecortar(deficit)) },
                     onSinAgua = { navController.navigate(Rutas.ME_QUEDE_SIN_AGUA) },
+                    onAvisos = { navController.navigate(Rutas.AVISOS) },
                     onEditarHogar = { navController.navigate(Rutas.CONFIGURAR_HOGAR) }
                 )
             }
@@ -80,6 +82,16 @@ fun AppNavHost(rutaInicial: String, hayConfiguracion: Boolean) {
         composable(Rutas.ME_QUEDE_SIN_AGUA) {
             ConBarraDelSistema {
                 SinAguaScreen(onVolver = { navController.popBackStack() })
+            }
+        }
+
+        composable(Rutas.AVISOS) {
+            ConBarraDelSistema {
+                AvisosScreen(
+                    onVolver = { navController.popBackStack() },
+                    onRegistrarLlenado = { navController.navigate(Rutas.registrarLlenado(TipoLlenado.COMPLETO.ruta)) },
+                    onQueRecortar = { deficit -> navController.navigate(Rutas.queRecortar(deficit)) }
+                )
             }
         }
     }

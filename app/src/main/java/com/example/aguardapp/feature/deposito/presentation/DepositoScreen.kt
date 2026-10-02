@@ -62,6 +62,7 @@ fun DepositoScreen(
     onQueRecortar: (Int) -> Unit,
     onSinAgua: () -> Unit,
     onEditarHogar: () -> Unit,
+    onAvisos: () -> Unit,
     viewModel: DepositoViewModel = viewModel { DepositoViewModel.desdeInyeccion() }
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -87,6 +88,9 @@ fun DepositoScreen(
         // "Qué recortar" solo tiene sentido cuando el agua no alcanza.
         if (vista != null && vista.deficitLitros > 0) {
             BotonSecundario("¿Qué puedo recortar?", { onQueRecortar(vista.deficitLitros) }, MARGEN)
+        }
+        TextButton(onAvisos, Modifier.align(Alignment.CenterHorizontally)) {
+            Text("Ver avisos", fontFamily = FuenteTexto, fontSize = 13.sp, color = AguaMedia, fontWeight = FontWeight.SemiBold)
         }
         if (vista != null) {
             TextButton(onSinAgua, Modifier.align(Alignment.CenterHorizontally)) {

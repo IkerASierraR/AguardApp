@@ -6,6 +6,7 @@ object Rutas {
     const val CONFIGURAR_HOGAR = "configurar_hogar"
     const val MI_DEPOSITO = "mi_deposito"
     const val ME_QUEDE_SIN_AGUA = "me_quede_sin_agua"
+    const val AVISOS = "avisos"
 
     // Rutas con argumentos.
     const val ARG_TIPO = "tipo"
