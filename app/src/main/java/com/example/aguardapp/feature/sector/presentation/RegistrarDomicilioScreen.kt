@@ -1,0 +1,180 @@
+package com.example.aguardapp.feature.sector.presentation
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.aguardapp.R
+import androidx.compose.ui.res.painterResource
+import com.example.aguardapp.core.ui.theme.AguaMedia
+import com.example.aguardapp.core.ui.theme.Blanco
+import com.example.aguardapp.core.ui.theme.Coral
+import com.example.aguardapp.core.ui.theme.Fondo
+import com.example.aguardapp.core.ui.theme.FuenteTexto
+import com.example.aguardapp.core.ui.theme.Tinta
+import com.example.aguardapp.core.ui.theme.TintaTenue
+import com.example.aguardapp.feature.sector.presentation.componentes.BotonConfirmarSector
+import com.example.aguardapp.feature.sector.presentation.componentes.BotonesUbicacion
+import com.example.aguardapp.feature.sector.presentation.componentes.MapaUbicacionPreview
+import com.example.aguardapp.feature.sector.presentation.componentes.NotaPrivacidad
+import com.example.aguardapp.feature.sector.presentation.componentes.SelectorUbicacion
+import com.example.aguardapp.feature.sector.presentation.componentes.TarjetaSectorDetectado
+
+@Composable
+fun RegistrarDomicilioScreen(
+    onVolver: () -> Unit = {},
+    viewModel: RegistrarDomicilioViewModel = viewModel { RegistrarDomicilioViewModel.desdeInyeccion() }
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var selectorAbierto by rememberSaveable { mutableStateOf(false) }
+    val solicitarUbicacion = rememberSolicitarUbicacion(
+        onBuscando = viewModel::buscandoUbicacion,
+        onResultado = { resultado ->
+            when (resultado) {
+                is ResultadoUbicacion.Encontrada -> viewModel.marcarEnMapa(resultado.coordenada)
+                ResultadoUbicacion.GpsApagado -> viewModel.avisarError(
+                    "La ubicación de tu teléfono está desactivada. Actívala en el panel rápido y vuelve a tocar."
+                )
+                ResultadoUbicacion.SinSenal -> viewModel.avisarError(
+                    "No llegó señal de ubicación. Acércate a una ventana e inténtalo otra vez, o marca tu casa en el mapa."
+                )
+            }
+        }
+    )
+    Column(
+        modifier = Modifier.fillMaxSize().background(Fondo).verticalScroll(rememberScrollState())
+    ) {
+        EncabezadoRegistro(onVolver)
+        MapaUbicacionPreview(
+            ubicacion = uiState.ubicacion,
+            onAbrir = { selectorAbierto = true },
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
+        )
+        BotonesUbicacion(
+            onUsarUbicacion = solicitarUbicacion,
+            onMarcarEnMapa = { selectorAbierto = true },
+            modifier = Modifier.padding(horizontal = 20.dp)
+        )
+        uiState.mensaje?.let { aviso ->
+            Text(
+                aviso,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+                fontFamily = FuenteTexto,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                color = if (uiState.mensajeEsError) Coral else AguaMedia
+            )
+        }
+        TarjetaSectorDetectado(
+            sectorDetectado = uiState.sector?.nombre ?: "—",
+            distrito = uiState.sector?.distrito ?: "—",
+            continuidad = uiState.continuidad.ifEmpty { "—" },
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
+        )
+        NotaPrivacidad(
+            texto = "En el servidor se guarda tu sector, nunca la coordenada exacta de tu casa.",
+            modifier = Modifier.padding(horizontal = 20.dp)
+        )
+        Spacer(Modifier.height(28.dp))
+        BotonConfirmarSector(
+            onClick = viewModel::confirmarSector,
+            modifier = Modifier.padding(horizontal = 20.dp),
+            habilitado = uiState.sector != null
+        )
+        if (uiState.guardado) {
+            Text(
+                "✓ Sector guardado",
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+                fontFamily = FuenteTexto,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = AguaMedia
+            )
+        }
+        Spacer(Modifier.height(24.dp))
+    }
+
+    if (selectorAbierto) {
+        SelectorUbicacion(
+            inicial = uiState.ubicacion,
+            onElegir = { coord ->
+                selectorAbierto = false
+                viewModel.marcarEnMapa(coord)
+            },
+            onVolver = { selectorAbierto = false }
+        )
+    }
+}
+
+@Composable
+private fun EncabezadoRegistro(onVolver: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().background(Blanco).statusBarsPadding()
+            .padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 22.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        BotonAtras(onVolver)
+        Column(Modifier.padding(top = 2.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                "¿Dónde vives?",
+                fontFamily = FuenteTexto,
+                fontSize = 19.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = (-0.19).sp,
+                color = Tinta
+            )
+            Text(
+                "Para saber a qué sector perteneces",
+                fontFamily = FuenteTexto,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                color = TintaTenue
+            )
+        }
+    }
+}
+
+@Composable
+private fun BotonAtras(onClick: () -> Unit) {
+    Box(
+        Modifier.size(40.dp).clip(RoundedCornerShape(13.dp)).background(Fondo)
+            .clickable(role = Role.Button, onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            painterResource(R.drawable.ic_atras),
+            contentDescription = "Volver",
+            modifier = Modifier.size(20.dp),
+            tint = Tinta
+        )
+    }
+}

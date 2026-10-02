@@ -1,0 +1,36 @@
+package com.example.aguardapp.feature.recibo.domain.usecase
+
+import com.example.aguardapp.feature.recibo.domain.model.ReciboBorrador
+import com.example.aguardapp.feature.recibo.domain.port.ParserRecibo
+import com.example.aguardapp.feature.recibo.domain.port.ReconocedorTexto
+import com.example.aguardapp.feature.recibo.domain.port.ResultadoParseo
+
+// Escanea y analiza un recibo: bytesImagen -> OCR (ReconocedorTexto) -> ParserRecibo -> ReciboBorrador.
+class EscanearReciboUseCase(
+    private val reconocedor: ReconocedorTexto,
+    private val parser: ParserRecibo
+) {
+    suspend operator fun invoke(bytesImagen: ByteArray): Result<ReciboBorrador> {
+        if (bytesImagen.isEmpty()) {
+            return Result.failure(IllegalArgumentException("La imagen capturada está vacía."))
+        }
+
+        return try {
+            reconocedor.reconocer(bytesImagen).fold(
+                onSuccess = { texto ->
+                    if (texto.estaVacio) {
+                        Result.failure(IllegalStateException("No se detectó ningún texto en la imagen. Intenta con mejor iluminación."))
+                    } else {
+                        when (val parseo = parser.parsear(texto)) {
+                            is ResultadoParseo.Exito -> Result.success(parseo.borrador)
+                            is ResultadoParseo.NoLegible -> Result.failure(IllegalStateException(parseo.motivo))
+                        }
+                    }
+                },
+                onFailure = { error -> Result.failure(error) }
+            )
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+}

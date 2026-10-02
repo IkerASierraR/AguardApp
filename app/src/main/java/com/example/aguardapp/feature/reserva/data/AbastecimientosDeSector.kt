@@ -1,0 +1,28 @@
+package com.example.aguardapp.feature.reserva.data
+
+import kotlinx.datetime.LocalDateTime
+import com.example.aguardapp.feature.reserva.domain.repository.AbastecimientosDelSector
+import com.example.aguardapp.feature.sector.domain.repository.SectorRepository
+import com.example.aguardapp.feature.sector.domain.usecase.ProximoAbastecimiento
+
+/** Une reserva con el cronograma de sector usando los contratos que sector publicó para ello. */
+class AbastecimientosDeSector(
+    private val sectores: SectorRepository,
+    private val sectorDelUsuario: suspend () -> String?
+) : AbastecimientosDelSector {
+
+    override suspend fun iniciosHasta(ahora: LocalDateTime): List<LocalDateTime> {
+        val sectorId = sectorDelUsuario() ?: return emptyList()
+        return sectores.obtenerCronogramas(sectorId).map { it.inicio }.filter { it <= ahora }
+    }
+
+    override suspend fun proximoDesde(ahora: LocalDateTime): LocalDateTime? {
+        val sectorId = sectorDelUsuario() ?: return null
+        return ProximoAbastecimiento().calcular(sectores.obtenerCronogramas(sectorId), ahora)?.inicio
+    }
+
+    override suspend fun nombreDelSector(): String? {
+        val sectorId = sectorDelUsuario() ?: return null
+        return sectores.obtenerSectores().firstOrNull { it.id == sectorId }?.distrito
+    }
+}

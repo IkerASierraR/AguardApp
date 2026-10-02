@@ -1,47 +1,57 @@
 package com.example.aguardapp
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.aguardapp.ui.theme.AguardAppTheme
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import com.example.aguardapp.core.di.mantenerReservaSincronizada
+import com.example.aguardapp.core.sesion.ActividadActual
+import com.example.aguardapp.feature.reserva.infrastructure.RecalculoHorarioWorker
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+
+    private val pedirPermisoDeAvisos =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* sin permiso, los avisos simplemente no se muestran */ }
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
+        ActividadActual.registrar(this)
+        solicitarPermisoDeAvisos()
+
         setContent {
-            AguardAppTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
+            App()
         }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+    override fun onDestroy() {
+        ActividadActual.liberar(this)
+        super.onDestroy()
+    }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    AguardAppTheme {
-        Greeting("Android")
+    override fun onStart() {
+        super.onStart()
+        RecalculoHorarioWorker.recalcularAhora(this)
+        // Mientras la app está a la vista, copia a la nube los cambios de la reserva si hay una sesión de Google.
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) { mantenerReservaSincronizada() }
+        }
+    }
+
+    // Desde Android 13 los avisos de la reserva necesitan el permiso del usuario.
+    private fun solicitarPermisoDeAvisos() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        val concedido = ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+            PackageManager.PERMISSION_GRANTED
+        if (!concedido) pedirPermisoDeAvisos.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
 }
