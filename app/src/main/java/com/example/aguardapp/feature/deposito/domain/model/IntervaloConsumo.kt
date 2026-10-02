@@ -2,8 +2,6 @@ package com.example.aguardapp.feature.deposito.domain.model
 
 import kotlinx.datetime.LocalDateTime
 
-// OBSERVADO: terminó con "me quedé sin agua", el tanque se vació de verdad.
-// POR_LLENADO: terminó en otro llenado; solo es una cota del consumo real.
 enum class ClaseIntervalo { OBSERVADO, POR_LLENADO }
 
 data class IntervaloConsumo(

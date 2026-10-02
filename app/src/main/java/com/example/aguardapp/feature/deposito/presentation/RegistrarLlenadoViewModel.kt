@@ -15,13 +15,11 @@ import com.example.aguardapp.feature.deposito.domain.repository.DepositoReposito
 import kotlin.math.roundToInt
 import org.koin.mp.KoinPlatform
 
-/** Cómo se llenó el tanque; `ruta` es el texto que viaja en la ruta "registrar_llenado/{tipo}". */
 enum class TipoLlenado(val ruta: String) {
     COMPLETO("completo"),
     PARCIAL("parcial");
 
     companion object {
-        /** Convierte el texto de la ruta en el tipo; si no se reconoce, se toma como completo. */
         fun desdeRuta(texto: String?): TipoLlenado = entries.firstOrNull { it.ruta == texto } ?: COMPLETO
     }
 }
@@ -29,14 +27,10 @@ enum class TipoLlenado(val ruta: String) {
 data class RegistrarLlenadoUiState(
     val tipo: TipoLlenado = TipoLlenado.COMPLETO,
     val capacidadLitros: Int? = null,
-    /** Lo que el usuario escribe en el campo de litros (solo en el llenado parcial). */
     val litrosTexto: String = "",
-    /** Error debajo del campo de litros; `null` si está bien. */
     val errorLitros: String? = null,
-    /** Error al guardar (por ejemplo, si aún no configuró su hogar). */
     val error: String? = null,
     val guardando: Boolean = false,
-    /** `true` cuando ya se guardó y la pantalla puede cerrarse. */
     val guardado: Boolean = false
 )
 
@@ -53,7 +47,6 @@ class RegistrarLlenadoViewModel(
         cargarCapacidad()
     }
 
-    // Lee la capacidad del tanque: es el total del llenado completo y el límite del parcial.
     private fun cargarCapacidad() {
         viewModelScope.launch {
             val perfil = repositorio.observarPerfil().first()
@@ -61,13 +54,11 @@ class RegistrarLlenadoViewModel(
         }
     }
 
-    /** El usuario escribe los litros: solo se aceptan dígitos y se valida al momento. */
     fun onLitrosChange(texto: String) {
         val soloDigitos = texto.filter { it.isDigit() }.take(MAXIMO_DIGITOS)
         _uiState.update { it.copy(litrosTexto = soloDigitos, errorLitros = validarLitros(soloDigitos, it.capacidadLitros)) }
     }
 
-    /** Guarda el llenado: el completo usa la capacidad; el parcial, los litros escritos. */
     fun onGuardar() {
         val estado = _uiState.value
         val capacidad = estado.capacidadLitros ?: return
@@ -93,7 +84,6 @@ class RegistrarLlenadoViewModel(
         }
     }
 
-    // Reglas del campo de litros: obligatorio, mayor que 0 y sin pasar la capacidad del tanque.
     private fun validarLitros(texto: String, capacidad: Int?): String? {
         val litros = texto.toIntOrNull() ?: return "Escribe cuántos litros entraron"
         if (litros <= 0) return "Los litros deben ser mayores que 0"

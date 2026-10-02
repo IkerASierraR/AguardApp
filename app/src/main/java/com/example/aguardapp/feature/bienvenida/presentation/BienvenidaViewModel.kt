@@ -11,9 +11,7 @@ import org.koin.mp.KoinPlatform
 import com.example.aguardapp.core.data.UsuarioDao
 
 data class BienvenidaUiState(
-    /** Si aceptó que los datos se guarden en el teléfono; sin aceptar no puede empezar. */
     val consentimiento: Boolean = true,
-    /** `true` cuando ya se guardó que pasó la bienvenida y se puede navegar. */
     val listo: Boolean = false
 )
 
@@ -24,7 +22,6 @@ class BienvenidaViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
 
     fun onAlternarConsentimiento() = _uiState.update { it.copy(consentimiento = !it.consentimiento) }
 
-    /** Guarda que ya pasó la bienvenida, para no volver a mostrarla. */
     fun onEmpezar() {
         if (!_uiState.value.consentimiento) return
         viewModelScope.launch {

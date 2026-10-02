@@ -15,9 +15,7 @@ import org.koin.mp.KoinPlatform
 
 data class QueRecortarUiState(
     val deficitLitros: Int = 0,
-    /** Las recomendaciones que corresponden al hogar. */
     val recomendaciones: List<Recomendacion> = emptyList(),
-    /** Las que el usuario marcó. */
     val elegidas: Set<Recomendacion> = emptySet(),
     val litrosGanados: Int = 0,
     val litrosQueFaltan: Int = 0
@@ -39,7 +37,6 @@ class QueRecortarViewModel(
         cargarRecomendaciones()
     }
 
-    // Solo se sugiere lo que el hogar hace, según los hábitos de su configuración.
     private fun cargarRecomendaciones() {
         viewModelScope.launch {
             val perfil = repositorio.observarPerfil().first() ?: return@launch
@@ -47,7 +44,6 @@ class QueRecortarViewModel(
         }
     }
 
-    /** Marca o desmarca una recomendación y recalcula al momento lo ganado y lo que falta. */
     fun onAlternar(recomendacion: Recomendacion) {
         _uiState.update { estado ->
             val elegidas = if (recomendacion in estado.elegidas) {

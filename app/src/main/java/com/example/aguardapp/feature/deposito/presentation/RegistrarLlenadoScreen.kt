@@ -41,7 +41,6 @@ import com.example.aguardapp.feature.deposito.presentation.componentes.TextoDeEr
 
 private val MARGEN = Modifier.padding(horizontal = 24.dp)
 
-/** Pantalla 04 del Figma: registra un llenado completo (solo confirmar) o parcial (con los litros). */
 @Composable
 fun RegistrarLlenadoScreen(
     tipo: TipoLlenado,
@@ -50,7 +49,6 @@ fun RegistrarLlenadoScreen(
     viewModel: RegistrarLlenadoViewModel = viewModel { RegistrarLlenadoViewModel.desdeInyeccion(tipo) }
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    // Cuando se guarda, se vuelve atrás; Mi depósito se actualiza solo porque observa los datos.
     LaunchedEffect(uiState.guardado) { if (uiState.guardado) onListo() }
     val esCompleto = uiState.tipo == TipoLlenado.COMPLETO
     IconosClarosEnBarraDeEstado(claros = false)
@@ -77,14 +75,12 @@ fun RegistrarLlenadoScreen(
     }
 }
 
-// El botón se habilita cuando ya se conoce la capacidad y, en el parcial, los litros son válidos.
 private fun puedeGuardar(uiState: RegistrarLlenadoUiState): Boolean {
     if (uiState.capacidadLitros == null || uiState.guardando) return false
     if (uiState.tipo == TipoLlenado.COMPLETO) return true
     return uiState.litrosTexto.isNotEmpty() && uiState.errorLitros == null
 }
 
-/** El campo de litros del llenado parcial, con su mensaje de error debajo. */
 @Composable
 private fun CampoDeLitros(uiState: RegistrarLlenadoUiState, onLitrosChange: (String) -> Unit, modifier: Modifier) {
     Column(modifier) {
@@ -104,7 +100,6 @@ private fun CampoDeLitros(uiState: RegistrarLlenadoUiState, onLitrosChange: (Str
     }
 }
 
-/** El dibujo del tanque con su capacidad completa. */
 @Composable
 private fun TarjetaDelTanque(capacidadLitros: Int?, modifier: Modifier) {
     Column(

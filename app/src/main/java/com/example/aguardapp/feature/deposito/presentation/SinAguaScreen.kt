@@ -49,7 +49,6 @@ import com.example.aguardapp.feature.deposito.presentation.componentes.TextoDeEr
 
 private val MARGEN = Modifier.padding(horizontal = 24.dp)
 
-/** Me quedé sin agua: el usuario dice cuándo se acabó y la app ajusta su estimación. */
 @Composable
 fun SinAguaScreen(
     onVolver: () -> Unit,
@@ -80,7 +79,6 @@ fun SinAguaScreen(
     }
 }
 
-/** Lo que se proyectaba frente a lo que pasó. */
 @Composable
 private fun Comparacion(vista: SinAguaVista, modifier: Modifier) {
     TarjetaBlanca(modifier) {
@@ -100,7 +98,6 @@ private fun FilaDeComparacion(etiqueta: String, valor: String, colorValor: Color
     }
 }
 
-/** "Se acabó ahora" o "Se acabó antes, a las...", con el campo de hora y su error debajo. */
 @Composable
 private fun OpcionesDeCuando(
     uiState: SinAguaUiState,

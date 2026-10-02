@@ -23,21 +23,16 @@ import com.example.aguardapp.core.ui.theme.AguaProfunda
 import com.example.aguardapp.core.ui.theme.Blanco
 import com.example.aguardapp.core.ui.theme.Tenue
 
-// Los dibujos del tanque: el de Mi depósito (con el nivel) y el de Registrar llenado (lleno).
-
 private const val DURACION_ANIMACION_MS = 900
 
-// Alturas de las marcas medidas desde arriba en el Figma (47, 96 y 145 de 196).
 private val MARCAS_INDICADOR = listOf(47f / 196, 96f / 196, 145f / 196)
 
-/** El tanque del Figma (106 × 196) con el agua bajando. */
 @Composable
 fun IndicadorNivelReservorio(fraccion: Float, modifier: Modifier = Modifier) {
     val nivel by animateFloatAsState(fraccion.coerceIn(0f, 1f), tween(DURACION_ANIMACION_MS))
     Canvas(modifier.size(width = 106.dp, height = 196.dp)) {
         val grosorBorde = 2.dp.toPx()
         val forma = formaDelTanque(size, inset = 0f)
-        // Tanque vacío en azul oscuro y el agua en turquesa claro, ambos sólidos.
         drawPath(forma, AguaProfunda)
         clipPath(forma) {
             val alto = size.height * nivel
@@ -60,10 +55,8 @@ private fun DrawScope.formaDelTanque(tamano: Size, inset: Float): Path =
         )
     }
 
-// Alturas de las marcas medidas desde arriba en el Figma (35,5, 73 y 110,5 de 150).
 private val MARCAS_TANQUE_LLENO = listOf(35.5f / 150, 73f / 150, 110.5f / 150)
 
-/** El tanque lleno sobre fondo claro (pantalla "Registrar llenado"): 96 × 150 con las marcas en turquesa. */
 @Composable
 fun TanqueLleno(modifier: Modifier = Modifier) {
     Canvas(modifier.size(width = 96.dp, height = 150.dp)) {

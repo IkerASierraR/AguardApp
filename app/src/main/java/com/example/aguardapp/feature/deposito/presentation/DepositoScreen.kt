@@ -55,7 +55,6 @@ import com.example.aguardapp.feature.deposito.presentation.componentes.TarjetaBl
 
 private val MARGEN = Modifier.padding(horizontal = 24.dp)
 
-/** Mi depósito: el nivel, la proyección y los accesos al resto de pantallas. */
 @Composable
 fun DepositoScreen(
     onRegistrarLlenado: (TipoLlenado) -> Unit,
@@ -85,7 +84,6 @@ fun DepositoScreen(
         }
         BotonPrincipal("Registrar llenado completo", { onRegistrarLlenado(TipoLlenado.COMPLETO) }, MARGEN)
         BotonSecundario("Registrar llenado parcial", { onRegistrarLlenado(TipoLlenado.PARCIAL) }, MARGEN, color = Tinta)
-        // "Qué recortar" solo tiene sentido cuando el agua no alcanza.
         if (vista != null && vista.deficitLitros > 0) {
             BotonSecundario("¿Qué puedo recortar?", { onQueRecortar(vista.deficitLitros) }, MARGEN)
         }
@@ -100,7 +98,6 @@ fun DepositoScreen(
     }
 }
 
-/** Antes del primer llenado no hay nada que proyectar. */
 @Composable
 private fun SinDatos(onEditarHogar: () -> Unit) {
     Column(Modifier.fillMaxWidth().statusBarsPadding().padding(24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -110,7 +107,6 @@ private fun SinDatos(onEditarHogar: () -> Unit) {
     }
 }
 
-/** La cabecera de color: saludo, botón de editar el hogar, el tanque y los litros que quedan. */
 @Composable
 private fun Encabezado(vista: DepositoVista, onEditarHogar: () -> Unit) {
     Column(
@@ -147,7 +143,6 @@ private fun Encabezado(vista: DepositoVista, onEditarHogar: () -> Unit) {
     }
 }
 
-/** Nivel actual, hasta cuándo alcanza, el próximo llenado y el déficit. */
 @Composable
 private fun Proyeccion(vista: DepositoVista, modifier: Modifier) {
     TarjetaBlanca(modifier) {
@@ -168,7 +163,6 @@ private fun FilaDeDato(etiqueta: String, valor: String, colorValor: Color) {
     }
 }
 
-/** Consumo por hora y promedio por persona, uno al lado del otro. */
 @Composable
 private fun Consumo(vista: DepositoVista, modifier: Modifier) {
     Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {

@@ -43,7 +43,6 @@ import com.example.aguardapp.core.ui.theme.TintaTenue
 
 private val FORMA = RoundedCornerShape(16.dp)
 
-/** Pantalla de bienvenida: presenta la app; al tocar "Empezar" llama a [onListo] para navegar. */
 @Composable
 fun BienvenidaScreen(
     onListo: () -> Unit,
@@ -67,7 +66,6 @@ fun BienvenidaScreen(
     }
 }
 
-/** El logo, el título y lo que hace la app. */
 @Composable
 private fun Presentacion(modifier: Modifier) {
     Column(modifier.verticalScroll(rememberScrollState()).padding(horizontal = 24.dp)) {
@@ -113,7 +111,6 @@ private fun Beneficio(titulo: String, detalle: String) {
     }
 }
 
-/** La casilla para aceptar que los datos se guarden en el teléfono. */
 @Composable
 private fun Consentimiento(marcado: Boolean, onAlternar: () -> Unit) {
     Row(

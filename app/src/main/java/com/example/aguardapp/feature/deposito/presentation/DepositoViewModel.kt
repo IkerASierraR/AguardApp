@@ -20,11 +20,9 @@ import kotlin.math.roundToInt
 
 data class DepositoUiState(
     val cargando: Boolean = true,
-    /** `null` mientras no haya hogar configurado o ningún llenado. */
     val vista: DepositoVista? = null
 )
 
-/** Todo lo que la pantalla "Mi depósito" muestra, ya listo para pintar. */
 data class DepositoVista(
     val saludo: String,
     val subtituloHogar: String,
@@ -34,13 +32,11 @@ data class DepositoVista(
     val textoLlenado: String,
     val textoAgotamiento: String,
     val textoProximoLlenado: String,
-    /** Litros que faltarán antes del próximo llenado; 0 si alcanza. */
     val deficitLitros: Int,
     val consumoLitrosPorHora: Int,
     val litrosPorHabitanteDia: Int?
 )
 
-/** Escucha el depósito y publica lo que la pantalla tiene que mostrar. */
 class DepositoViewModel(
     private val repositorio: DepositoRepository,
     private val ahora: () -> LocalDateTime
@@ -52,7 +48,6 @@ class DepositoViewModel(
     private val calcularDeficit = CalcularDeficit()
 
     init {
-        // El nivel baja con el tiempo aunque nada cambie en la base, así que la vista se refresca cada minuto.
         val cadaMinuto = flow {
             while (true) {
                 emit(Unit)
@@ -65,13 +60,11 @@ class DepositoViewModel(
         }
     }
 
-    // Arma la vista solo si hay hogar configurado y al menos un llenado.
     private suspend fun publicar(perfil: PerfilHogar?, deposito: Deposito?) {
         val vista = if (perfil != null && deposito != null) armarVista(perfil, deposito) else null
         _uiState.value = DepositoUiState(cargando = false, vista = vista)
     }
 
-    // Convierte el depósito del dominio en los textos y números de la pantalla.
     private suspend fun armarVista(perfil: PerfilHogar, deposito: Deposito): DepositoVista {
         val momento = ahora()
         val nivel = deposito.nivelEn(momento)

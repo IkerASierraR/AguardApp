@@ -23,7 +23,6 @@ import com.example.aguardapp.feature.deposito.domain.usecase.EstimarConsumo
 import com.example.aguardapp.feature.deposito.domain.usecase.HistorialDeposito
 import com.example.aguardapp.feature.deposito.domain.usecase.ResultadoSinAgua
 
-/** Lee y escribe solo en Room: la base local es la fuente de verdad. */
 class DepositoRepositoryImpl(
     private val dao: DepositoDao,
     private val usuarioId: String,
@@ -36,7 +35,6 @@ class DepositoRepositoryImpl(
     override fun observarPerfil(): Flow<PerfilHogar?> = dao.observarPerfil(usuarioId).map { it?.aDominio() }
 
     override suspend fun guardarPerfil(configuracion: ConfiguracionHogar): Result<Unit> = runCatching {
-        // El consumo por hábitos se recalcula con la nueva configuración; el aprendido se descarta.
         val consumoPorHabitos = estimar.porHabitos(configuracion.habitos, configuracion.habitantes)
         dao.guardarPerfil(PerfilHogar(usuarioId, configuracion, consumoPorHabitos).aEntidad())
     }
@@ -56,7 +54,6 @@ class DepositoRepositoryImpl(
         val (perfil, _) = requireNotNull(cargar()) { SIN_PERFIL }
         require(litros > Litros.CERO && litros <= perfil.capacidad.litros) { "Los litros deben ser mayores que 0 y no superar la capacidad" }
         dao.guardarLlenado(EventoLlenado(momento, litros).aEntidad(nuevoId(), usuarioId))
-        // Con un llenado nuevo, el consumo vuelve a estimarse con todo el historial.
         dao.guardarPerfil(perfil.copy(consumoVigente = null).aEntidad())
     }
 
@@ -71,7 +68,6 @@ class DepositoRepositoryImpl(
         PrevisualizacionSinAgua(deposito.agotamientoProyectado(), momento, deposito.consumo, resultado.deposito.consumo)
     }
 
-    // Calcula qué pasaría al declarar que se quedó sin agua, sin guardar nada.
     private suspend fun simularSinAgua(momento: LocalDateTime): Triple<PerfilHogar, Deposito, ResultadoSinAgua> {
         require(momento <= ahora()) { "No se puede declarar en el futuro" }
         val (perfil, historial) = requireNotNull(cargar()) { SIN_PERFIL }
@@ -80,7 +76,6 @@ class DepositoRepositoryImpl(
         return Triple(perfil, deposito, resultado)
     }
 
-    // Lee una sola vez el perfil y el historial; `null` si el hogar aún no está configurado.
     private suspend fun cargar(): Pair<PerfilHogar, HistorialDeposito>? {
         val perfil = dao.observarPerfil(usuarioId).first()?.aDominio() ?: return null
         val historial = aHistorial(dao.observarLlenados(usuarioId).first(), dao.observarNovedades(usuarioId).first())

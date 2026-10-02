@@ -36,7 +36,6 @@ import com.example.aguardapp.feature.deposito.presentation.componentes.TarjetaBl
 
 private val MARGEN = Modifier.padding(horizontal = 24.dp)
 
-/** Qué recortar: el usuario marca lo que dejará de hacer y ve al momento si cubre el déficit. */
 @Composable
 fun QueRecortarScreen(
     deficitLitros: Int,
@@ -59,7 +58,6 @@ fun QueRecortarScreen(
     }
 }
 
-/** Arriba: cuánto se gana con lo marcado y cuánto falta todavía. */
 @Composable
 private fun ResumenDelAhorro(uiState: QueRecortarUiState, modifier: Modifier) {
     TarjetaBlanca(modifier) {
@@ -72,7 +70,6 @@ private fun ResumenDelAhorro(uiState: QueRecortarUiState, modifier: Modifier) {
     }
 }
 
-/** Una recomendación con su casilla; se puede tocar toda la fila. */
 @Composable
 private fun FilaDeRecomendacion(recomendacion: Recomendacion, marcada: Boolean, onAlternar: () -> Unit, modifier: Modifier) {
     TarjetaBlanca(modifier.clickable(role = Role.Checkbox, onClick = onAlternar), padding = 10) {

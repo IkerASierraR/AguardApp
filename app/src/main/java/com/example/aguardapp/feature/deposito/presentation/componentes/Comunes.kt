@@ -40,12 +40,9 @@ import com.example.aguardapp.core.ui.theme.FuenteTexto
 import com.example.aguardapp.core.ui.theme.Tinta
 import com.example.aguardapp.core.ui.theme.TintaTenue
 
-// Piezas de diseño que comparten todas las pantallas del depósito. Colores sólidos y una sola fuente.
-
 private val FORMA_BOTON = RoundedCornerShape(16.dp)
 private val FORMA_TARJETA = RoundedCornerShape(18.dp)
 
-/** La barra blanca de arriba: botón atrás (si hay a dónde volver), título y subtítulo. */
 @Composable
 fun BarraSuperior(titulo: String, subtitulo: String, onVolver: (() -> Unit)?) {
     Row(
@@ -68,7 +65,6 @@ fun BarraSuperior(titulo: String, subtitulo: String, onVolver: (() -> Unit)?) {
     }
 }
 
-/** El botón principal: a lo ancho de la pantalla y de un solo color. Deshabilitado se pinta en gris. */
 @Composable
 fun BotonPrincipal(
     texto: String,
@@ -90,7 +86,6 @@ fun BotonPrincipal(
     }
 }
 
-/** El botón secundario: fondo blanco con borde del color del texto. */
 @Composable
 fun BotonSecundario(texto: String, onClick: () -> Unit, modifier: Modifier = Modifier, color: Color = Coral) {
     Box(
@@ -107,7 +102,6 @@ fun BotonSecundario(texto: String, onClick: () -> Unit, modifier: Modifier = Mod
     }
 }
 
-/** Tarjeta blanca con esquinas redondeadas, la base de casi todos los bloques. */
 @Composable
 fun TarjetaBlanca(modifier: Modifier = Modifier, padding: Int = 18, contenido: @Composable () -> Unit) {
     Column(
@@ -116,7 +110,6 @@ fun TarjetaBlanca(modifier: Modifier = Modifier, padding: Int = 18, contenido: @
     ) { contenido() }
 }
 
-/** Un error general de la pantalla, con un botón para cerrarlo. */
 @Composable
 fun AvisoDeError(mensaje: String, onCerrar: () -> Unit, modifier: Modifier = Modifier) {
     Row(
@@ -130,7 +123,6 @@ fun AvisoDeError(mensaje: String, onCerrar: () -> Unit, modifier: Modifier = Mod
     }
 }
 
-/** El mensaje de error que va debajo de un campo; no muestra nada si no hay error. */
 @Composable
 fun TextoDeError(mensaje: String?) {
     if (mensaje == null) return
@@ -141,7 +133,6 @@ fun TextoDeError(mensaje: String?) {
     )
 }
 
-/** Pide una hora con el selector del sistema. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DialogoDeHora(titulo: String, horaInicial: LocalTime, onConfirmar: (LocalTime) -> Unit, onCancelar: () -> Unit) {

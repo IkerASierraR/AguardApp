@@ -18,8 +18,6 @@ import com.example.aguardapp.feature.deposito.domain.model.PerfilHogar
 import com.example.aguardapp.feature.deposito.domain.model.TipoReservorio
 import com.example.aguardapp.feature.deposito.domain.usecase.HistorialDeposito
 
-// Conversiones entre las tablas de Room y los modelos del dominio.
-
 fun PerfilHogar.aEntidad() = PerfilHogarEntity(
     usuarioId = usuarioId,
     tipoReservorio = configuracion.tipoReservorio.name,
@@ -51,7 +49,6 @@ fun EventoLlenado.aEntidad(id: String, usuarioId: String) =
 
 fun EventoLlenadoEntity.aDominio() = EventoLlenado(LocalDateTime.parse(momento), Litros(litros))
 
-/** Junta los llenados y las veces que se quedó sin agua en el historial del depósito. */
 fun aHistorial(llenados: List<EventoLlenadoEntity>, novedades: List<NovedadDepositoEntity>) = HistorialDeposito(
     llenados = llenados.map { it.aDominio() },
     observados = novedades.map {
