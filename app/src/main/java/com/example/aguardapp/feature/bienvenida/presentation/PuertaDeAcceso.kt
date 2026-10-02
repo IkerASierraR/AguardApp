@@ -5,14 +5,10 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 
-/**
- * El primer uso, en orden: la bienvenida hasta que la persona elige cómo entrar, el registro del
- * domicilio hasta que tiene un sector, y después la app.
- */
+/** El primer uso: la bienvenida hasta que la persona elige cómo entrar, y después la app. */
 @Composable
 fun PuertaDeAcceso(
     viewModel: AccesoViewModel = viewModel { AccesoViewModel.desdeInyeccion() },
-    registrarDomicilio: @Composable () -> Unit,
     contenido: @Composable () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -25,7 +21,6 @@ fun PuertaDeAcceso(
             onGoogle = viewModel::entrarConGoogle,
             onDescartarMensaje = viewModel::descartarMensaje
         )
-        !uiState.tieneDomicilio -> registrarDomicilio()
         else -> contenido()
     }
 }

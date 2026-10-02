@@ -12,7 +12,7 @@ import com.example.aguardapp.core.sesion.InicioConGoogle
 import com.example.aguardapp.core.sesion.InicioConGoogleAndroid
 import org.koin.mp.KoinPlatform
 import com.example.aguardapp.core.data.IdentidadLocal
-import com.example.aguardapp.feature.reserva.data.sync.SincronizadorReserva
+import com.example.aguardapp.feature.deposito.data.sync.SincronizadorDeposito
 
 private const val PREFERENCIAS_SESION_NUBE = "sesion_nube"
 
@@ -20,12 +20,8 @@ private const val PREFERENCIAS_SESION_NUBE = "sesion_nube"
 fun moduloPlataforma(context: Context, base: AguardAppDatabase, usuarioId: String) = module {
     single { base }
     single { base.usuarioDao() }
-    single { base.reservaDao() }
-    single { base.reciboDao() }
-    single { base.reciboBorradorDao() }
-    single { base.avisoReservaDao() }
-    single { base.sectorDao() }
-    single { base.retosDao() }
+    single { base.depositoDao() }
+    single { base.avisoDepositoDao() }
     single(QUALIFICADOR_USUARIO) { usuarioId }
     single<InicioConGoogle> { InicioConGoogleAndroid(get()) }
     // Guarda la sesión de Supabase en SharedPreferences, para que sobreviva a un reinicio de la app.
@@ -41,7 +37,7 @@ fun iniciarAplicacion(context: Context) {
     iniciarKoin { modules(moduloPlataforma(context.applicationContext, base, usuario.id)) }
 }
 
-/** Se queda copiando la reserva a la nube (si hay sesión de Google) hasta que se cancele la corrutina que lo llama. */
-suspend fun mantenerReservaSincronizada() {
-    if (koinIniciado()) KoinPlatform.getKoin().get<SincronizadorReserva>().mantenerSincronizado()
+/** Se queda copiando el depósito a la nube (si hay sesión de Google) hasta que se cancele la corrutina que lo llama. */
+suspend fun mantenerDepositoSincronizado() {
+    if (koinIniciado()) KoinPlatform.getKoin().get<SincronizadorDeposito>().mantenerSincronizado()
 }

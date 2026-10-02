@@ -45,18 +45,6 @@ room {
     schemaDirectory("$projectDir/schemas")
 }
 
-// El mapa de sector (MapLibre) viene con el renderizador Vulkan por defecto, y en emuladores y celulares sin
-// Vulkan la app se cierra al abrir "Sector" (vk::createInstanceUnique: ErrorInitializationFailed).
-// Se usa la variante OpenGL ES de la misma versión, que trae las mismas clases y funciona en todos.
-val maplibreOpengl = libs.versions.maplibreOpengl.get()
-configurations.configureEach {
-    resolutionStrategy.dependencySubstitution {
-        substitute(module("org.maplibre.gl:android-sdk"))
-            .using(module("org.maplibre.gl:android-sdk-opengl:$maplibreOpengl"))
-            .because("Vulkan no está disponible en todos los dispositivos")
-    }
-}
-
 dependencies {
     // Android y Compose
     implementation(platform(libs.androidx.compose.bom))
@@ -92,14 +80,6 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services)
     implementation(libs.googleid)
-
-    // Mapa, cámara, permisos y OCR
-    implementation(libs.maplibre.compose)
-    implementation(libs.filekit.dialogs.compose)
-    implementation(libs.moko.permissions)
-    implementation(libs.moko.permissions.compose)
-    implementation(libs.moko.permissions.camera)
-    implementation(libs.mlkit.text.recognition)
 
     testImplementation(libs.junit)
 }

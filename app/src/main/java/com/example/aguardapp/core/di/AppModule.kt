@@ -13,10 +13,7 @@ import com.example.aguardapp.core.sesion.RegistroDeAcceso
 import com.example.aguardapp.core.sesion.RegistroDeAccesoEnRoom
 import com.example.aguardapp.core.util.Reloj
 import com.example.aguardapp.core.util.RelojDelSistema
-import com.example.aguardapp.feature.recibo.di.moduloRecibo
-import com.example.aguardapp.feature.reserva.di.moduloReserva
-import com.example.aguardapp.feature.retos.di.moduloRetos
-import com.example.aguardapp.feature.sector.di.moduloSector
+import com.example.aguardapp.feature.deposito.di.moduloDeposito
 
 /** Con este nombre `InicioAplicacion` aporta el UUID local del usuario. */
 val QUALIFICADOR_USUARIO = named("usuarioId")
@@ -28,7 +25,7 @@ val moduloCore = module {
     single<SupabaseClient> { crearClienteSupabase(get()) }
 }
 
-val modulosApp: List<Module> = listOf(moduloCore, moduloReserva, moduloSector, moduloRecibo, moduloRetos)
+val modulosApp: List<Module> = listOf(moduloCore, moduloDeposito)
 
 fun koinIniciado(): Boolean = KoinPlatform.getKoinOrNull() != null
 

@@ -12,11 +12,6 @@ kotlinxDatetime = "0.8.0"
 kotlinxSerialization = "1.9.0"
 room = "2.8.5"
 work = "2.11.2"
-maplibreCompose = "0.14.0"
-maplibreOpengl = "13.0.2"
-filekit = "0.10.0"
-mokoPermissions = "0.19.1"
-mlkitTextRecognition = "16.0.1"
 supabase = "3.8.0"
 ktor = "3.5.1"
 credentials = "1.5.0"
@@ -58,14 +53,6 @@ multiplatform-settings = { group = "com.russhwolf", name = "multiplatform-settin
 androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
 androidx-credentials-play-services = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
 googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
-
-# Mapa, cámara, permisos y OCR
-maplibre-compose = { group = "org.maplibre.compose", name = "maplibre-compose", version.ref = "maplibreCompose" }
-filekit-dialogs-compose = { group = "io.github.vinceglb", name = "filekit-dialogs-compose", version.ref = "filekit" }
-moko-permissions = { group = "dev.icerock.moko", name = "permissions", version.ref = "mokoPermissions" }
-moko-permissions-compose = { group = "dev.icerock.moko", name = "permissions-compose", version.ref = "mokoPermissions" }
-moko-permissions-camera = { group = "dev.icerock.moko", name = "permissions-camera", version.ref = "mokoPermissions" }
-mlkit-text-recognition = { group = "com.google.mlkit", name = "text-recognition", version.ref = "mlkitTextRecognition" }
 
 # Pruebas
 junit = { group = "junit", name = "junit", version.ref = "junit" }

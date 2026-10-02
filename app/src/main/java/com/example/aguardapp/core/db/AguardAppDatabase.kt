@@ -4,26 +4,12 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.example.aguardapp.core.data.local.UsuarioDao
 import com.example.aguardapp.core.data.local.UsuarioEntity
-import com.example.aguardapp.feature.recibo.data.local.ReciboBorradorDao
-import com.example.aguardapp.feature.recibo.data.local.ReciboBorradorEntity
-import com.example.aguardapp.feature.recibo.data.local.ReciboDao
-import com.example.aguardapp.feature.recibo.data.local.ReciboEntity
-import com.example.aguardapp.feature.reserva.data.local.EventoLlenadoEntity
-import com.example.aguardapp.feature.reserva.data.local.AvisoReservaDao
-import com.example.aguardapp.feature.reserva.data.local.AvisoReservaEntity
-import com.example.aguardapp.feature.reserva.data.local.NovedadReservaEntity
-import com.example.aguardapp.feature.reserva.data.local.PerfilHogarEntity
-import com.example.aguardapp.feature.reserva.data.local.ReservaDao
-import com.example.aguardapp.feature.retos.data.local.RetoEntity
-import com.example.aguardapp.feature.retos.data.local.RetoUsuarioEntity
-import com.example.aguardapp.feature.retos.data.local.ReporteEntity
-import com.example.aguardapp.feature.retos.data.local.RetosDao
-import com.example.aguardapp.feature.sector.data.local.ConfirmacionHorarioEntity
-import com.example.aguardapp.feature.sector.data.local.CronogramaEntity
-import com.example.aguardapp.feature.sector.data.local.DomicilioEntity
-import com.example.aguardapp.feature.sector.data.local.PuntoCisternaEntity
-import com.example.aguardapp.feature.sector.data.local.SectorDao
-import com.example.aguardapp.feature.sector.data.local.SectorEntity
+import com.example.aguardapp.feature.deposito.data.local.AvisoDepositoDao
+import com.example.aguardapp.feature.deposito.data.local.AvisoDepositoEntity
+import com.example.aguardapp.feature.deposito.data.local.DepositoDao
+import com.example.aguardapp.feature.deposito.data.local.EventoLlenadoEntity
+import com.example.aguardapp.feature.deposito.data.local.NovedadDepositoEntity
+import com.example.aguardapp.feature.deposito.data.local.PerfilHogarEntity
 
 const val NOMBRE_BASE_DE_DATOS = "aguardapp.db"
 
@@ -32,29 +18,14 @@ const val NOMBRE_BASE_DE_DATOS = "aguardapp.db"
         UsuarioEntity::class,
         PerfilHogarEntity::class,
         EventoLlenadoEntity::class,
-        NovedadReservaEntity::class,
-        AvisoReservaEntity::class,
-        SectorEntity::class,
-        CronogramaEntity::class,
-        PuntoCisternaEntity::class,
-        ConfirmacionHorarioEntity::class,
-        DomicilioEntity::class,
-        ReciboEntity::class,
-        ReciboBorradorEntity::class,
-        RetoEntity::class,
-        RetoUsuarioEntity::class,
-        ReporteEntity::class
+        NovedadDepositoEntity::class,
+        AvisoDepositoEntity::class
     ],
     version = 1,
     exportSchema = true
 )
 abstract class AguardAppDatabase : RoomDatabase() {
     abstract fun usuarioDao(): UsuarioDao
-    abstract fun reservaDao(): ReservaDao
-    abstract fun reciboDao(): ReciboDao
-    abstract fun reciboBorradorDao(): ReciboBorradorDao
-    abstract fun avisoReservaDao(): AvisoReservaDao
-    abstract fun sectorDao(): SectorDao
-    abstract fun retosDao(): RetosDao
+    abstract fun depositoDao(): DepositoDao
+    abstract fun avisoDepositoDao(): AvisoDepositoDao
 }
-

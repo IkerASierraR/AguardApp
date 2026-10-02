@@ -1,21 +1,24 @@
 package com.example.aguardapp
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import com.example.aguardapp.core.navigation.AppNavegacion
+import androidx.compose.ui.Modifier
 import com.example.aguardapp.core.ui.theme.AguardAppTheme
-import com.example.aguardapp.core.ui.theme.IconosClarosEnBarraDeEstado
 import com.example.aguardapp.feature.bienvenida.presentation.PuertaDeAcceso
-import com.example.aguardapp.feature.sector.presentation.RegistrarDomicilioScreen
+import com.example.aguardapp.feature.deposito.presentation.DepositoScreen
 
 @Composable
 fun App() {
     AguardAppTheme {
-        PuertaDeAcceso(
-            registrarDomicilio = {
-                // La bienvenida deja los iconos claros; esta pantalla tiene el encabezado blanco.
-                IconosClarosEnBarraDeEstado(claros = false)
-                RegistrarDomicilioScreen()
+        PuertaDeAcceso {
+            // Sin barra inferior, el contenido solo debe respetar la barra de navegación del sistema.
+            Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).navigationBarsPadding()) {
+                DepositoScreen()
             }
-        ) { AppNavegacion() }
+        }
     }
 }
