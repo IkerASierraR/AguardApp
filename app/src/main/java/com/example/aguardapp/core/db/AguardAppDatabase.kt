@@ -1,6 +1,7 @@
 package com.example.aguardapp.core.db
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -10,6 +11,7 @@ import com.example.aguardapp.feature.deposito.data.local.DepositoDao
 import com.example.aguardapp.feature.deposito.data.local.EventoLlenadoEntity
 import com.example.aguardapp.feature.deposito.data.local.NovedadDepositoEntity
 import com.example.aguardapp.feature.deposito.data.local.PerfilHogarEntity
+import com.example.aguardapp.feature.deposito.data.local.PlanRecortesEntity
 
 private const val NOMBRE_BASE_DE_DATOS = "aguardapp.db"
 
@@ -22,10 +24,12 @@ private const val NOMBRE_BASE_DE_DATOS = "aguardapp.db"
         UsuarioEntity::class,
         PerfilHogarEntity::class,
         EventoLlenadoEntity::class,
-        NovedadDepositoEntity::class
+        NovedadDepositoEntity::class,
+        PlanRecortesEntity::class
     ],
-    version = 2,
-    exportSchema = true
+    version = 3,
+    exportSchema = true,
+    autoMigrations = [AutoMigration(from = 2, to = 3)]
 )
 abstract class AguardAppDatabase : RoomDatabase() {
     abstract fun usuarioDao(): UsuarioDao

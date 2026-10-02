@@ -6,6 +6,7 @@ import com.example.aguardapp.feature.deposito.domain.model.ConfiguracionHogar
 import com.example.aguardapp.feature.deposito.domain.model.Deposito
 import com.example.aguardapp.feature.deposito.domain.model.Litros
 import com.example.aguardapp.feature.deposito.domain.model.PerfilHogar
+import com.example.aguardapp.feature.deposito.domain.model.PlanRecortes
 import com.example.aguardapp.feature.deposito.domain.model.PrevisualizacionSinAgua
 
 interface DepositoRepository {
@@ -23,4 +24,8 @@ interface DepositoRepository {
     suspend fun declararSinAgua(momento: LocalDateTime): Result<Unit>
 
     suspend fun previsualizarSinAgua(momento: LocalDateTime): Result<PrevisualizacionSinAgua>
+
+    fun observarPlanRecortes(): Flow<PlanRecortes?>
+
+    suspend fun guardarPlanRecortes(plan: PlanRecortes): Result<Unit>
 }

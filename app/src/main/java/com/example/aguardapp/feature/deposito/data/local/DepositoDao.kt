@@ -27,4 +27,10 @@ interface DepositoDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun guardarNovedad(novedad: NovedadDepositoEntity)
+
+    @Query("SELECT * FROM plan_recortes WHERE usuarioId = :usuarioId")
+    fun observarPlanRecortes(usuarioId: String): Flow<PlanRecortesEntity?>
+
+    @Upsert
+    suspend fun guardarPlanRecortes(plan: PlanRecortesEntity)
 }

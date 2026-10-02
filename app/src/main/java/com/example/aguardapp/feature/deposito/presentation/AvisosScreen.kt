@@ -43,7 +43,7 @@ import com.example.aguardapp.feature.deposito.presentation.componentes.TarjetaBl
 fun AvisosScreen(
     onVolver: () -> Unit,
     onRegistrarLlenado: () -> Unit,
-    onQueRecortar: (Int) -> Unit,
+    onQueRecortar: () -> Unit,
     viewModel: AvisosViewModel = viewModel { AvisosViewModel.desdeInyeccion() }
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -59,9 +59,9 @@ fun AvisosScreen(
             ) {
                 items(uiState.avisos) { aviso ->
                     TarjetaDeAviso(aviso) {
-                        when (val destino = aviso.destino) {
+                        when (aviso.destino) {
                             DestinoDelAviso.RegistrarLlenado -> onRegistrarLlenado()
-                            is DestinoDelAviso.QueRecortar -> onQueRecortar(destino.deficitLitros)
+                            DestinoDelAviso.QueRecortar -> onQueRecortar()
                             DestinoDelAviso.MiDeposito -> onVolver()
                         }
                     }

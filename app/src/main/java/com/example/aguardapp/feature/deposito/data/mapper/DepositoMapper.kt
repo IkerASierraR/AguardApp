@@ -5,6 +5,7 @@ import kotlinx.datetime.LocalTime
 import com.example.aguardapp.feature.deposito.data.local.EventoLlenadoEntity
 import com.example.aguardapp.feature.deposito.data.local.NovedadDepositoEntity
 import com.example.aguardapp.feature.deposito.data.local.PerfilHogarEntity
+import com.example.aguardapp.feature.deposito.data.local.PlanRecortesEntity
 import com.example.aguardapp.feature.deposito.domain.model.CapacidadLitros
 import com.example.aguardapp.feature.deposito.domain.model.ClaseIntervalo
 import com.example.aguardapp.feature.deposito.domain.model.ConfiguracionHogar
@@ -15,6 +16,8 @@ import com.example.aguardapp.feature.deposito.domain.model.HabitosDelHogar
 import com.example.aguardapp.feature.deposito.domain.model.IntervaloConsumo
 import com.example.aguardapp.feature.deposito.domain.model.Litros
 import com.example.aguardapp.feature.deposito.domain.model.PerfilHogar
+import com.example.aguardapp.feature.deposito.domain.model.PlanRecortes
+import com.example.aguardapp.feature.deposito.domain.model.Recomendacion
 import com.example.aguardapp.feature.deposito.domain.model.TipoReservorio
 import com.example.aguardapp.feature.deposito.domain.usecase.HistorialDeposito
 
@@ -63,4 +66,17 @@ fun IntervaloConsumo.comoNovedad(id: String, usuarioId: String, momento: LocalDa
     momento = momento.toString(),
     inicioObservado = inicio.toString(),
     litrosObservados = litrosConsumidos.valor
+)
+
+fun PlanRecortes.aEntidad(usuarioId: String) = PlanRecortesEntity(
+    usuarioId = usuarioId,
+    llenado = llenado.toString(),
+    hasta = hasta.toString(),
+    recortes = elegidas.joinToString(",") { it.name }
+)
+
+fun PlanRecortesEntity.aDominio() = PlanRecortes(
+    llenado = LocalDateTime.parse(llenado),
+    hasta = LocalDateTime.parse(hasta),
+    elegidas = recortes.split(",").mapNotNull { nombre -> Recomendacion.entries.firstOrNull { it.name == nombre } }.toSet()
 )

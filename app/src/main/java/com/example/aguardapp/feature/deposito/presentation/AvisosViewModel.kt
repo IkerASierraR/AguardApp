@@ -12,8 +12,10 @@ import org.koin.mp.KoinPlatform
 import com.example.aguardapp.core.util.Reloj
 import com.example.aguardapp.feature.deposito.domain.model.Deposito
 import com.example.aguardapp.feature.deposito.domain.model.PerfilHogar
+import com.example.aguardapp.feature.deposito.domain.model.PlanRecortes
 import com.example.aguardapp.feature.deposito.domain.repository.DepositoRepository
 import com.example.aguardapp.feature.deposito.domain.usecase.CalcularDeficit
+import com.example.aguardapp.feature.deposito.domain.usecase.CalcularRecortes
 import kotlin.math.roundToInt
 
 private const val PORCENTAJE_NIVEL_BAJO = 20
@@ -22,7 +24,7 @@ enum class TipoDeAviso { DEFICIT, NIVEL_BAJO, SIN_LLENADO }
 
 sealed interface DestinoDelAviso {
     data object RegistrarLlenado : DestinoDelAviso
-    data class QueRecortar(val deficitLitros: Int) : DestinoDelAviso
+    data object QueRecortar : DestinoDelAviso
     data object MiDeposito : DestinoDelAviso
 }
 
@@ -47,20 +49,22 @@ class AvisosViewModel(
     val uiState: StateFlow<AvisosUiState> = _uiState.asStateFlow()
 
     private val calcularDeficit = CalcularDeficit()
+    private val calcularRecortes = CalcularRecortes()
 
     init {
         viewModelScope.launch {
-            combine(repositorio.observarPerfil(), repositorio.observarDeposito()) { perfil, deposito -> armarAvisos(perfil, deposito) }
+            combine(repositorio.observarPerfil(), repositorio.observarDeposito(), repositorio.observarPlanRecortes(), ::armarAvisos)
                 .collect { avisos -> _uiState.value = AvisosUiState(cargando = false, avisos = avisos) }
         }
     }
 
-    private fun armarAvisos(perfil: PerfilHogar?, deposito: Deposito?): List<AvisoVista> {
+    private fun armarAvisos(perfil: PerfilHogar?, deposito: Deposito?, plan: PlanRecortes?): List<AvisoVista> {
         if (perfil == null) return emptyList()
         if (deposito == null) return listOf(avisoSinLlenado())
         val momento = ahora()
         val proximoLlenado = calcularDeficit.proximoLlenado(perfil.configuracion.horaProximoLlenado, momento)
-        val deficit = calcularDeficit.litrosQueFaltan(deposito, proximoLlenado, momento)
+        val recortes = calcularRecortes.evaluar(perfil, deposito, plan, momento)
+        val deficit = recortes.litrosQueFaltan
         val nivel = deposito.nivelEn(momento)
         return buildList {
             if (deficit > 0) {
@@ -69,8 +73,9 @@ class AvisosViewModel(
                         tipo = TipoDeAviso.DEFICIT,
                         titulo = "Tu reserva se agota antes de que vuelva el agua",
                         texto = "Se acaba ${describirMomento(deposito.agotamientoProyectado(), momento)} y el agua llega " +
-                            "${describirMomento(proximoLlenado, momento)}, te faltan ${formatearMiles(deficit)} L.",
-                        destino = DestinoDelAviso.QueRecortar(deficit)
+                            "${describirMomento(proximoLlenado, momento)}, te faltan ${formatearMiles(deficit)} L" +
+                            if (recortes.tieneRecortes) " aun con tus recortes." else ".",
+                        destino = DestinoDelAviso.QueRecortar
                     )
                 )
             }

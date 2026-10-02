@@ -33,3 +33,11 @@ data class NovedadDepositoEntity(
     val inicioObservado: String,
     val litrosObservados: Double
 )
+
+@Entity(tableName = "plan_recortes")
+data class PlanRecortesEntity(
+    @PrimaryKey val usuarioId: String,
+    val llenado: String,
+    val hasta: String,
+    val recortes: String
+)

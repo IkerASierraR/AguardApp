@@ -63,7 +63,7 @@ El desarrollo de AguardApp se justifica por la necesidad de que cada hogar conoz
 - Configuración del hogar: tipo y capacidad del depósito, habitantes, hábitos y hora habitual de llegada del agua.
 - Registro de llenados completos o parciales.
 - Cálculo del nivel actual, de la hora de agotamiento y del déficit de litros hasta el próximo llenado.
-- Recomendaciones de recorte de consumo según los hábitos del hogar.
+- Recomendaciones de recorte de consumo según los hábitos del hogar, con un plan que se guarda hasta el próximo llenado.
 - Declaración de "me quedé sin agua", con la que la aplicación aprende el consumo real.
 - Operación 100 % sin conexión con una base de datos local (Room / SQLite).
 
@@ -163,7 +163,7 @@ Las pantallas implementadas y sus rutas de navegación son:
 | `configurar_hogar` | Configurar hogar | Formulario del hogar con validaciones y hora del próximo llenado escrita en formato 24 h. |
 | `mi_deposito` | Mi depósito | Nivel, "Te alcanza hasta", próximo llenado, déficit y consumo. |
 | `registrar_llenado/{tipo}` | Registrar llenado | Llenado completo (confirmar) o parcial (con litros). |
-| `que_recortar/{deficit}` | Qué recortar | Recomendaciones con casillas y cálculo en vivo. |
+| `que_recortar` | Qué recortar | Recomendaciones con litros según el hogar; lo marcado se guarda hasta el próximo llenado y se refleja en Mi depósito y Avisos. |
 | `me_quede_sin_agua` | Me quedé sin agua | "Se acabó ahora" o "Se acabó antes, a las HH:mm" (hora escrita; si es posterior a la actual, se toma como de ayer). |
 
 ### 5.3. Metodología de implementación (Documento de VISIÓN, SRS, SAD)

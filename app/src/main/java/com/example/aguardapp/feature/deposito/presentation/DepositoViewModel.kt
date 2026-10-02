@@ -14,8 +14,10 @@ import org.koin.mp.KoinPlatform
 import com.example.aguardapp.core.util.Reloj
 import com.example.aguardapp.feature.deposito.domain.model.Deposito
 import com.example.aguardapp.feature.deposito.domain.model.PerfilHogar
+import com.example.aguardapp.feature.deposito.domain.model.PlanRecortes
 import com.example.aguardapp.feature.deposito.domain.repository.DepositoRepository
 import com.example.aguardapp.feature.deposito.domain.usecase.CalcularDeficit
+import com.example.aguardapp.feature.deposito.domain.usecase.CalcularRecortes
 import kotlin.math.roundToInt
 
 data class DepositoUiState(
@@ -33,6 +35,7 @@ data class DepositoVista(
     val textoAgotamiento: String,
     val textoProximoLlenado: String,
     val deficitLitros: Int,
+    val faltanConRecortes: Int?,
     val consumoLitrosPorHora: Int,
     val litrosPorHabitanteDia: Int?
 )
@@ -46,6 +49,7 @@ class DepositoViewModel(
     val uiState: StateFlow<DepositoUiState> = _uiState.asStateFlow()
 
     private val calcularDeficit = CalcularDeficit()
+    private val calcularRecortes = CalcularRecortes()
 
     init {
         val cadaMinuto = flow {
@@ -55,21 +59,23 @@ class DepositoViewModel(
             }
         }
         viewModelScope.launch {
-            combine(repositorio.observarPerfil(), repositorio.observarDeposito(), cadaMinuto) { perfil, deposito, _ -> perfil to deposito }
-                .collect { (perfil, deposito) -> publicar(perfil, deposito) }
+            combine(repositorio.observarPerfil(), repositorio.observarDeposito(), repositorio.observarPlanRecortes(), cadaMinuto) { perfil, deposito, plan, _ ->
+                Triple(perfil, deposito, plan)
+            }.collect { (perfil, deposito, plan) -> publicar(perfil, deposito, plan) }
         }
     }
 
-    private suspend fun publicar(perfil: PerfilHogar?, deposito: Deposito?) {
-        val vista = if (perfil != null && deposito != null) armarVista(perfil, deposito) else null
+    private suspend fun publicar(perfil: PerfilHogar?, deposito: Deposito?, plan: PlanRecortes?) {
+        val vista = if (perfil != null && deposito != null) armarVista(perfil, deposito, plan) else null
         _uiState.value = DepositoUiState(cargando = false, vista = vista)
     }
 
-    private suspend fun armarVista(perfil: PerfilHogar, deposito: Deposito): DepositoVista {
+    private suspend fun armarVista(perfil: PerfilHogar, deposito: Deposito, plan: PlanRecortes?): DepositoVista {
         val momento = ahora()
         val nivel = deposito.nivelEn(momento)
         val habitantes = perfil.habitantes.cantidad
         val proximoLlenado = calcularDeficit.proximoLlenado(perfil.configuracion.horaProximoLlenado, momento)
+        val recortes = calcularRecortes.evaluar(perfil, deposito, plan, momento)
         return DepositoVista(
             saludo = saludoPara(momento.hour),
             subtituloHogar = if (habitantes == 1) "1 persona" else "$habitantes personas",
@@ -79,7 +85,8 @@ class DepositoViewModel(
             textoLlenado = "${nombreDelTipo(perfil.configuracion.tipoReservorio)} · último llenado ${describirMomento(deposito.llenado.momento, momento)}",
             textoAgotamiento = describirMomento(deposito.agotamientoProyectado(), momento),
             textoProximoLlenado = describirMomento(proximoLlenado, momento),
-            deficitLitros = calcularDeficit.litrosQueFaltan(deposito, proximoLlenado, momento),
+            deficitLitros = recortes.deficitLitros,
+            faltanConRecortes = recortes.litrosQueFaltan.takeIf { recortes.tieneRecortes },
             consumoLitrosPorHora = deposito.consumo.litrosPorHora.roundToInt(),
             litrosPorHabitanteDia = repositorio.litrosPorHabitanteDia()?.roundToInt()
         )

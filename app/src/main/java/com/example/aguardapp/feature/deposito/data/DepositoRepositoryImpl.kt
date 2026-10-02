@@ -15,6 +15,7 @@ import com.example.aguardapp.feature.deposito.domain.model.Deposito
 import com.example.aguardapp.feature.deposito.domain.model.EventoLlenado
 import com.example.aguardapp.feature.deposito.domain.model.Litros
 import com.example.aguardapp.feature.deposito.domain.model.PerfilHogar
+import com.example.aguardapp.feature.deposito.domain.model.PlanRecortes
 import com.example.aguardapp.feature.deposito.domain.model.PrevisualizacionSinAgua
 import com.example.aguardapp.feature.deposito.domain.repository.DepositoRepository
 import com.example.aguardapp.feature.deposito.domain.usecase.ArmarDeposito
@@ -66,6 +67,12 @@ class DepositoRepositoryImpl(
     override suspend fun previsualizarSinAgua(momento: LocalDateTime): Result<PrevisualizacionSinAgua> = runCatching {
         val (_, deposito, resultado) = simularSinAgua(momento)
         PrevisualizacionSinAgua(deposito.agotamientoProyectado(), momento, deposito.consumo, resultado.deposito.consumo)
+    }
+
+    override fun observarPlanRecortes(): Flow<PlanRecortes?> = dao.observarPlanRecortes(usuarioId).map { it?.aDominio() }
+
+    override suspend fun guardarPlanRecortes(plan: PlanRecortes): Result<Unit> = runCatching {
+        dao.guardarPlanRecortes(plan.aEntidad(usuarioId))
     }
 
     private suspend fun simularSinAgua(momento: LocalDateTime): Triple<PerfilHogar, Deposito, ResultadoSinAgua> {

@@ -334,17 +334,18 @@ sequenceDiagram
     participant VM as QueRecortarViewModel
     participant R as DepositoRepository
     participant CR as CalcularRecortes
-    U->>S: Toca "¿Qué puedo recortar?" (déficit en la ruta)
-    S->>VM: QueRecortarViewModel(deficit)
-    VM->>R: observarPerfil().first()
-    R-->>VM: Hábitos del hogar
-    VM->>CR: sugerir(habitos)
-    CR-->>VM: Recomendaciones que corresponden
+    U->>S: Toca "¿Qué puedo recortar?"
+    S->>VM: QueRecortarViewModel()
+    VM->>R: observarPerfil(), observarDeposito(), observarPlanRecortes()
+    R-->>VM: Hogar, depósito y plan guardado
+    VM->>CR: evaluar(perfil, deposito, plan, ahora)
+    CR-->>VM: Déficit, recortes con litros y los ya marcados
     VM-->>S: Lista con casillas
     U->>S: Marca una recomendación
     S->>VM: onAlternar(recomendacion)
-    VM->>CR: litrosGanados() y litrosQueFaltan()
-    CR-->>VM: Ganas X L / Te faltan Y L
+    VM->>R: guardarPlanRecortes(plan hasta el próximo llenado)
+    VM->>CR: SituacionRecortes(litrosGanados, litrosQueFaltan)
+    CR-->>VM: Ahorras X L / Aún te faltan Y L
     VM-->>S: uiState actualizado en vivo
 ```
 
@@ -431,9 +432,9 @@ classDiagram
       +litrosQueFaltan()
     }
     class CalcularRecortes {
+      +evaluar()
       +sugerir()
-      +litrosGanados()
-      +litrosQueFaltan()
+      +nuevoPlan()
     }
     class DepositoViewModel
     class ConfiguracionViewModel
@@ -453,18 +454,22 @@ classDiagram
     ConfiguracionViewModel --> EstimarConsumo
     RegistrarLlenadoViewModel --> DepositoRepository
     QueRecortarViewModel --> CalcularRecortes
+    QueRecortarViewModel --> DepositoRepository
+    DepositoViewModel --> CalcularRecortes
+    CalcularRecortes --> CalcularDeficit
     SinAguaViewModel --> DepositoRepository
 ```
 
 ### 3.2.6. Diagrama de base de datos
 
-Base de datos local `aguardapp.db` (Room, versión 1).
+Base de datos local `aguardapp.db` (Room, versión 3). De la versión 2 a la 3 se agregó la tabla `plan_recortes` con una migración automática (`AutoMigration`), que conserva los datos existentes.
 
 ```mermaid
 erDiagram
     USUARIO ||--o| PERFIL_HOGAR : configura
     USUARIO ||--o{ EVENTO_LLENADO : registra
     USUARIO ||--o{ NOVEDAD_DEPOSITO : declara
+    USUARIO ||--o| PLAN_RECORTES : planifica
 
     USUARIO {
       string id PK
@@ -494,6 +499,12 @@ erDiagram
       string momento
       string inicioObservado
       double litrosObservados
+    }
+    PLAN_RECORTES {
+      string usuarioId PK
+      string llenado
+      string hasta
+      string recortes
     }
 ```
 

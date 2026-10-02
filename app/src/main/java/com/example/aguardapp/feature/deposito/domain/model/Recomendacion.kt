@@ -1,15 +1,20 @@
 package com.example.aguardapp.feature.deposito.domain.model
 
-enum class Recomendacion(
-    val descripcion: String,
-    val litrosQueAhorra: Int,
-    private val corresponde: (HabitosDelHogar) -> Boolean
-) {
-    NO_LAVAR_ROPA("No lavar ropa hoy", 80, { it.usaLavadora }),
-    NO_REGAR("No regar el jardín hoy", 80, { it.riegaJardin }),
-    DUCHAS_CORTAS("Duchas de 5 minutos", 40, { it.duchasPorDia > 0 }),
-    CERRAR_EL_CANO("Cerrar el caño al lavar platos", 45, { true }),
-    BALDE_EN_EL_BANO("Usar un balde en el inodoro", 30, { true });
+import kotlinx.datetime.LocalDateTime
 
-    fun correspondeA(habitos: HabitosDelHogar): Boolean = corresponde(habitos)
+enum class Recomendacion(val descripcion: String) {
+    NO_LAVAR_ROPA("No lavar ropa hoy"),
+    NO_REGAR("No regar el jardín hoy"),
+    DUCHAS_CORTAS("Duchas de 5 minutos"),
+    CERRAR_EL_CANO("Lavar los platos en un recipiente, sin dejar el caño abierto"),
+    BALDE_EN_EL_BANO("Echar al inodoro agua ya usada, con un balde"),
+}
+
+data class PlanRecortes(
+    val llenado: LocalDateTime,
+    val hasta: LocalDateTime,
+    val elegidas: Set<Recomendacion>
+) {
+    fun vigentePara(deposito: Deposito, ahora: LocalDateTime): Boolean =
+        deposito.llenado.momento == llenado && ahora < hasta
 }

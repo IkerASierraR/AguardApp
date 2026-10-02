@@ -58,7 +58,7 @@ private val MARGEN = Modifier.padding(horizontal = 24.dp)
 @Composable
 fun DepositoScreen(
     onRegistrarLlenado: (TipoLlenado) -> Unit,
-    onQueRecortar: (Int) -> Unit,
+    onQueRecortar: () -> Unit,
     onSinAgua: () -> Unit,
     onEditarHogar: () -> Unit,
     onAvisos: () -> Unit,
@@ -85,7 +85,7 @@ fun DepositoScreen(
         BotonPrincipal("Registrar llenado completo", { onRegistrarLlenado(TipoLlenado.COMPLETO) }, MARGEN)
         BotonSecundario("Registrar llenado parcial", { onRegistrarLlenado(TipoLlenado.PARCIAL) }, MARGEN, color = Tinta)
         if (vista != null && vista.deficitLitros > 0) {
-            BotonSecundario("¿Qué puedo recortar?", { onQueRecortar(vista.deficitLitros) }, MARGEN)
+            BotonSecundario(if (vista.faltanConRecortes != null) "Ver mis recortes" else "¿Qué puedo recortar?", onQueRecortar, MARGEN)
         }
         TextButton(onAvisos, Modifier.align(Alignment.CenterHorizontally)) {
             Text("Ver avisos", fontFamily = FuenteTexto, fontSize = 13.sp, color = AguaMedia, fontWeight = FontWeight.SemiBold)
@@ -152,6 +152,10 @@ private fun Proyeccion(vista: DepositoVista, modifier: Modifier) {
         FilaDeDato("Te alcanza hasta", vista.textoAgotamiento, Tinta)
         FilaDeDato("Próximo llenado", vista.textoProximoLlenado, Tinta)
         FilaDeDato("Déficit", "${formatearMiles(vista.deficitLitros)} L", if (vista.deficitLitros > 0) Coral else Tinta)
+        vista.faltanConRecortes?.let { faltan ->
+            if (faltan == 0) FilaDeDato("Con tus recortes", "alcanza", AguaMedia)
+            else FilaDeDato("Con tus recortes", "faltan ${formatearMiles(faltan)} L", Coral)
+        }
     }
 }
 

@@ -188,7 +188,7 @@ Tras el análisis se mantuvieron los requerimientos iniciales y se precisaron su
 | RF-03 | Registrar llenado | Completo: se registran los litros de la capacidad. Parcial: los litros deben ser mayores que 0 y no superar la capacidad. No se pueden registrar llenados en el futuro. | Alta |
 | RF-04 | Consultar el depósito | Nivel actual en litros y porcentaje, último llenado, "Te alcanza hasta", próximo llenado, consumo en L/h y promedio en L/persona/día. Se actualiza solo cada minuto. | Alta |
 | RF-05 | Calcular el déficit | Déficit = consumo por hora × horas hasta el próximo llenado − nivel actual (nunca negativo). | Alta |
-| RF-06 | Recomendar recortes | Solo se sugieren las acciones que corresponden a los hábitos del hogar; se muestra "Ganas X L" y "Te faltan Y L" o "¡Cubriste el déficit!". | Media |
+| RF-06 | Recomendar recortes | Solo se sugieren las acciones que corresponden a los hábitos del hogar, con litros calculados para ese hogar; se muestra "Ahorras X L" y "Aún te faltan Y L" o "¡Con esto te alcanza hasta el próximo llenado!". Lo marcado se guarda como plan de recortes hasta el próximo llenado (o hasta registrar un llenado nuevo), se vuelve a mostrar al entrar y se refleja en Mi depósito ("Con tus recortes") y en Avisos. | Media |
 | RF-07 | Declarar que se quedó sin agua | Opciones "Se acabó ahora" o "Se acabó antes, a las HH:mm" (4 números en formato de 24 h; el ":" se agrega solo). Una hora posterior a la actual se toma como del día anterior. La hora debe existir, no ser futura y ser posterior al último llenado; cada caso tiene su propio mensaje. Antes de registrar se muestra lo proyectado frente a lo ocurrido, y la comparación se actualiza con la hora escrita. El botón Registrar no permite registros duplicados. | Media |
 | RF-08 | Operar sin conexión | Todas las funciones trabajan con la base local. | Alta |
 
@@ -204,7 +204,7 @@ Tras el análisis se mantuvieron los requerimientos iniciales y se precisaron su
 | RN-06 | El consumo por hábitos se calcula con 60 L por persona al día más 30 L por ducha, 100 L si usa lavadora y 150 L si riega el jardín, repartidos en 12 horas de uso al día. |
 | RN-07 | Al declarar que se quedó sin agua, el nuevo consumo no puede variar más de un 30 % respecto del anterior en una sola declaración. |
 | RN-08 | Al registrar un llenado se descarta el consumo aprendido y se vuelve a estimar con todo el historial. |
-| RN-09 | Las recomendaciones de recorte son: no lavar ropa hoy (80 L, si usa lavadora), no regar el jardín (80 L, si riega), duchas de 5 minutos (40 L, si se ducha), cerrar el caño al lavar platos (45 L) y usar un balde en el inodoro (30 L). |
+| RN-09 | Las recomendaciones de recorte y su ahorro diario son: no lavar ropa hoy (100 L, si usa lavadora), no regar el jardín (150 L, si riega), duchas de 5 minutos (la mitad de 30 L por ducha × duchas por día × habitantes), lavar los platos en un recipiente (8 L por persona) y echar al inodoro agua ya usada (10 L por persona). El ahorro se multiplica por la parte del día de uso (12 h) que falta hasta el próximo llenado, con un máximo de un día; así es coherente con el cálculo del déficit. |
 | RN-10 | El usuario se identifica con un UUID local que se crea una sola vez y no cambia. |
 
 ## 5. Fase de Desarrollo
@@ -317,7 +317,7 @@ flowchart LR
 |---|---|
 | **Actor** | Jefe de hogar |
 | **Precondición** | El depósito tiene déficit. |
-| **Flujo principal** | 1) El usuario toca "¿Qué puedo recortar?". 2) El sistema muestra las recomendaciones que corresponden a sus hábitos. 3) El usuario marca acciones. 4) El sistema recalcula en vivo los litros ganados y los que faltan. |
+| **Flujo principal** | 1) El usuario toca "¿Qué puedo recortar?". 2) El sistema muestra las recomendaciones que corresponden a sus hábitos. 3) El usuario marca acciones. 4) El sistema recalcula en vivo los litros ahorrados y los que faltan, y guarda el plan hasta el próximo llenado. 5) Mi depósito y Avisos muestran el déficit que queda con los recortes. |
 | **Postcondición** | El usuario conoce un plan para que el agua alcance. |
 
 | CU-06 | Declarar que se quedó sin agua |

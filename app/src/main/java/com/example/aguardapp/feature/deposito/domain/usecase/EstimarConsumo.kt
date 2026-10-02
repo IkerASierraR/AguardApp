@@ -22,7 +22,13 @@ internal object ParametrosConsumo {
     const val LITROS_POR_DUCHA = 30.0
     const val LITROS_LAVADORA = 100.0
     const val LITROS_RIEGO = 150.0
+
+    const val AGUA_WATER = 50.0
     const val HORAS_DE_USO_AL_DIA = 12.0
+
+    const val AHORRO_DUCHA_CORTA = 0.5
+    const val AHORRO_PLATOS_POR_PERSONA = 8.0
+    const val AHORRO_INODORO_POR_PERSONA = 10.0
 }
 
 class EstimarConsumo {

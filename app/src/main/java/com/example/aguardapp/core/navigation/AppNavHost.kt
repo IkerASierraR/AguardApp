@@ -47,7 +47,7 @@ fun AppNavHost(rutaInicial: String, hayConfiguracion: Boolean) {
             ConBarraDelSistema {
                 DepositoScreen(
                     onRegistrarLlenado = { tipo -> navController.navigate(Rutas.registrarLlenado(tipo.ruta)) },
-                    onQueRecortar = { deficit -> navController.navigate(Rutas.queRecortar(deficit)) },
+                    onQueRecortar = { navController.navigate(Rutas.QUE_RECORTAR) },
                     onSinAgua = { navController.navigate(Rutas.ME_QUEDE_SIN_AGUA) },
                     onAvisos = { navController.navigate(Rutas.AVISOS) },
                     onEditarHogar = { navController.navigate(Rutas.CONFIGURAR_HOGAR) }
@@ -69,13 +69,9 @@ fun AppNavHost(rutaInicial: String, hayConfiguracion: Boolean) {
             }
         }
 
-        composable(
-            Rutas.QUE_RECORTAR,
-            arguments = listOf(navArgument(Rutas.ARG_DEFICIT) { type = NavType.IntType })
-        ) { entrada ->
-            val deficit = entrada.arguments?.getInt(Rutas.ARG_DEFICIT) ?: 0
+        composable(Rutas.QUE_RECORTAR) {
             ConBarraDelSistema {
-                QueRecortarScreen(deficitLitros = deficit, onVolver = { navController.popBackStack() })
+                QueRecortarScreen(onVolver = { navController.popBackStack() })
             }
         }
 
@@ -90,7 +86,7 @@ fun AppNavHost(rutaInicial: String, hayConfiguracion: Boolean) {
                 AvisosScreen(
                     onVolver = { navController.popBackStack() },
                     onRegistrarLlenado = { navController.navigate(Rutas.registrarLlenado(TipoLlenado.COMPLETO.ruta)) },
-                    onQueRecortar = { deficit -> navController.navigate(Rutas.queRecortar(deficit)) }
+                    onQueRecortar = { navController.navigate(Rutas.QUE_RECORTAR) }
                 )
             }
         }
