@@ -2,10 +2,10 @@
 
 ## Proyecto AguardApp
 
-**Sistema:** AguardApp — sistema móvil para la gestión del depósito domiciliario de agua durante el racionamiento hídrico en Tacna.  
+**Sistema:** AguardApp — sistema móvil para la gestión de la reserva domiciliaria de agua y la anticipación de cortes durante el racionamiento hídrico en Tacna.  
 **Curso:** Soluciones Móviles I  
 **Docente:** Mag. Alberto Johnatan Flor Rodríguez  
-**Versión:** 2.0  
+**Versión:** 2.1  
 **Fecha:** 02/10/2026  
 **Lugar:** Tacna — Perú, 2026
 
@@ -24,6 +24,7 @@
 |---|---|---|---|---|---|
 | 1.0 | DJ - JL - CM - IS | AFR | AFR | 30/09/2026 | Versión original |
 | 2.0 | DJ - JL - CM - IS | — | — | 02/10/2026 | Actualización a la arquitectura de AguardApp: Android nativo, MVVM + DDD, módulo Depósito y base de datos local |
+| 2.1 | DJ - JL - CM - IS | — | — | 02/10/2026 | Se agrega la pantalla Avisos (RF-09) y se actualiza la base de datos a la versión 2 |
 
 ---
 
@@ -85,6 +86,7 @@ El documento se organiza en cuatro secciones: introducción; objetivos y restric
 | RF-06 | Recomendar recortes de consumo | Media |
 | RF-07 | Declarar que se quedó sin agua y ajustar el consumo | Media |
 | RF-08 | Operar sin conexión | Alta |
+| RF-09 | Consultar los avisos del depósito (déficit, nivel bajo, sin llenado) | Media |
 
 ### 2.1.2. Requerimientos no funcionales — atributos de calidad
 
@@ -123,6 +125,7 @@ flowchart LR
       U4((Consultar mi depósito))
       U5((Consultar qué recortar))
       U6((Declarar que se quedó sin agua))
+      U7((Consultar avisos))
     end
 
     JH --> U1
@@ -131,6 +134,7 @@ flowchart LR
     JH --> U4
     JH --> U5
     JH --> U6
+    JH --> U7
 ```
 
 ## 3.2. Vista lógica
@@ -348,6 +352,40 @@ sequenceDiagram
     VM-->>S: uiState actualizado en vivo
 ```
 
+##### 2.6. Avisos
+
+```mermaid
+sequenceDiagram
+    actor U as Usuario
+    participant DS as DepositoScreen
+    participant S as AvisosScreen
+    participant VM as AvisosViewModel
+    participant R as DepositoRepository
+    participant CD as CalcularDeficit
+    participant NAV as AppNavHost
+    U->>DS: Toca "Ver avisos"
+    DS->>NAV: navigate(avisos)
+    S->>VM: collectAsStateWithLifecycle()
+    VM->>R: observarPerfil() + observarDeposito()
+    R-->>VM: PerfilHogar y Deposito
+    alt Sin llenados
+        VM-->>S: Aviso SIN_LLENADO
+    else Con depósito
+        VM->>CD: proximoLlenado() y litrosQueFaltan()
+        CD-->>VM: Déficit en litros
+        VM->>VM: nivelEn(ahora): ¿menos del 20 %?
+        VM-->>S: Avisos DEFICIT y/o NIVEL_BAJO (o lista vacía)
+    end
+    U->>S: Toca un aviso
+    alt DEFICIT
+        S->>NAV: que_recortar/{deficit}
+    else SIN_LLENADO
+        S->>NAV: registrar_llenado/completo
+    else NIVEL_BAJO
+        S->>NAV: popBackStack() a Mi depósito
+    end
+```
+
 ### 3.2.3. Diagrama de colaboración
 
 ```mermaid
@@ -440,6 +478,7 @@ classDiagram
     class RegistrarLlenadoViewModel
     class QueRecortarViewModel
     class SinAguaViewModel
+    class AvisosViewModel
 
     DepositoRepositoryImpl ..|> DepositoRepository
     DepositoRepositoryImpl --> DepositoDao
@@ -454,11 +493,13 @@ classDiagram
     RegistrarLlenadoViewModel --> DepositoRepository
     QueRecortarViewModel --> CalcularRecortes
     SinAguaViewModel --> DepositoRepository
+    AvisosViewModel --> DepositoRepository
+    AvisosViewModel --> CalcularDeficit
 ```
 
 ### 3.2.6. Diagrama de base de datos
 
-Base de datos local `aguardapp.db` (Room, versión 1).
+Base de datos local `aguardapp.db` (Room, versión 2). Los esquemas de cada versión se exportan en `app/schemas/`. No hay migraciones: al subir la versión, Room borra la base anterior y crea la nueva (`fallbackToDestructiveMigration`). Los avisos no tienen tabla, porque se calculan a partir del depósito.
 
 ```mermaid
 erDiagram
@@ -593,10 +634,12 @@ flowchart TD
     K -- Registrar llenado --> L[Guardar llenado]
     K -- Sin agua --> M[Guardar novedad y nuevo consumo]
     K -- Qué recortar --> N[Mostrar recomendaciones]
+    K -- Ver avisos --> O[Mostrar avisos: déficit, nivel bajo o sin llenado]
     K -- Ninguna, pasa un minuto --> H
     L --> H
     M --> H
     N --> G
+    O --> G
 ```
 
 Las operaciones con la base de datos se ejecutan en corrutinas fuera del hilo principal; las pantallas observan `StateFlow` y se recomponen solo cuando cambia su estado.
@@ -624,7 +667,7 @@ La aplicación se distribuye como un único APK. No requiere servidor, cuenta de
 
 ## 4.1. Escenario de funcionalidad
 
-Los atributos de calidad (QA) son propiedades medibles que indican en qué grado el sistema satisface las necesidades de sus interesados. AguardApp entrega de forma completa las funciones del módulo Depósito: configurar el hogar, registrar llenados, consultar el nivel y el déficit, ver qué recortar y declarar que se quedó sin agua.
+Los atributos de calidad (QA) son propiedades medibles que indican en qué grado el sistema satisface las necesidades de sus interesados. AguardApp entrega de forma completa las funciones del módulo Depósito: configurar el hogar, registrar llenados, consultar el nivel y el déficit, ver qué recortar, declarar que se quedó sin agua y consultar los avisos del depósito.
 
 ## 4.2. Escenario de usabilidad
 
