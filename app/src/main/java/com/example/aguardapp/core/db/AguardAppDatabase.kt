@@ -13,7 +13,10 @@ import com.example.aguardapp.feature.deposito.data.local.PerfilHogarEntity
 
 private const val NOMBRE_BASE_DE_DATOS = "aguardapp.db"
 
-/** La base de datos local de la app (SQLite con Room). */
+/**
+ * La base de datos local de la app (SQLite con Room).
+ * Cada vez que cambien las tablas hay que subir `version`; sin migraciones, Room borra la base vieja y crea la nueva.
+ */
 @Database(
     entities = [
         UsuarioEntity::class,
@@ -21,7 +24,7 @@ private const val NOMBRE_BASE_DE_DATOS = "aguardapp.db"
         EventoLlenadoEntity::class,
         NovedadDepositoEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 abstract class AguardAppDatabase : RoomDatabase() {
