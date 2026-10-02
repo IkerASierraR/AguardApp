@@ -69,7 +69,7 @@ class AvisosViewModel(
                         tipo = TipoDeAviso.DEFICIT,
                         titulo = "Tu reserva se agota antes de que vuelva el agua",
                         texto = "Se acaba ${describirMomento(deposito.agotamientoProyectado(), momento)} y el agua llega " +
-                            "${describirMomento(proximoLlenado, momento)}. Te faltan ${formatearMiles(deficit)} L.",
+                            "${describirMomento(proximoLlenado, momento)}, te faltan ${formatearMiles(deficit)} L.",
                         destino = DestinoDelAviso.QueRecortar(deficit)
                     )
                 )
